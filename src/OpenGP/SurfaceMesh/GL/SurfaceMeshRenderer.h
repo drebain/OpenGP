@@ -1,6 +1,7 @@
 #pragma once
 
-#include <OpenGP/GL/Components/Renderer.h>
+#include <OpenGP/GL/Renderer.h>
+#include <OpenGP/GL/GPUMesh.h>
 #include <OpenGP/SurfaceMesh/SurfaceMesh.h>
 
 
@@ -11,18 +12,28 @@ namespace OpenGP {
 class SurfaceMeshRenderer : public Renderer {
 private:
 
+    GPUMesh gpu_mesh;
 
+    Shader shader;
 
 public:
 
-    HEADERONLY_INLINE SurfaceMeshRenderer() {}
+    HEADERONLY_INLINE SurfaceMeshRenderer();
 
     virtual ~SurfaceMeshRenderer() {}
 
-    void render(const RenderContext&) {}
+    HEADERONLY_INLINE void render(const RenderContext&);
+
+    HEADERONLY_INLINE void rebuild();
+
+    HEADERONLY_INLINE void upload_mesh(const SurfaceMesh &mesh);
 
 };
 
 //=============================================================================
 } // OpenGP::
 //=============================================================================
+
+#ifdef HEADERONLY
+    #include "SurfaceMeshRenderer.cpp"
+#endif

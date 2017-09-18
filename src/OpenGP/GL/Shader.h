@@ -48,6 +48,8 @@ public:
 #endif
     void release(){ glUseProgram(0); }
 
+    HEADERONLY_INLINE void clear();
+
     bool is_valid(){ return _is_valid; }
 
     bool check_is_current(){

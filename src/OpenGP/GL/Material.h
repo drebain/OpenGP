@@ -19,8 +19,14 @@ public:
     HEADERONLY_INLINE Material();
     HEADERONLY_INLINE Material(const std::string &code);
 
+    HEADERONLY_INLINE const std::string &get_shading_code() const;
+
 };
 
 //=============================================================================
 } // OpenGP::
 //=============================================================================
+
+#ifdef HEADERONLY
+    #include "Material.cpp"
+#endif

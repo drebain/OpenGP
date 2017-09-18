@@ -5,6 +5,7 @@
 ///--- Mesh rendering
 #include <OpenGP/GL/Application.h>
 #include <OpenGP/GL/Scene.h>
+#include <OpenGP/GL/Components/RenderComponent.h>
 #include <OpenGP/SurfaceMesh/SurfaceMesh.h>
 #include <OpenGP/SurfaceMesh/GL/SurfaceMeshRenderer.h>
 
@@ -25,7 +26,7 @@ int main(int argc, char** argv){
     window.set_title("Test Window");
 
     Scene scene;
-    auto &renderer = scene.create_entity_with<SurfaceMeshRenderer>();
+    auto &render_component = scene.create_entity_with<RenderComponent<SurfaceMeshRenderer>>();
 
     return app.run();
 }

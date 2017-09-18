@@ -4,7 +4,8 @@
 
 #include <OpenGP/headeronly.h>
 #include <OpenGP/types.h>
-#include <OpenGP/GL/Component.h>
+#include <OpenGP/GL/Shader.h>
+#include <OpenGP/GL/Material.h>
 
 //=============================================================================
 namespace OpenGP {
@@ -15,6 +16,16 @@ public:
 
     virtual ~RenderContext() {}
 
+    virtual float aspect() const = 0;
+    virtual float vfov() const = 0;
+
+    virtual float near() const = 0;
+    virtual float far() const = 0;
+
+    virtual Vec3 eye() const = 0;
+    virtual Vec3 forward() const = 0;
+    virtual Vec3 up() const = 0;
+
     virtual Mat4x4 M() const = 0;
     virtual Mat4x4 V() const = 0;
     virtual Mat4x4 P() const = 0;
@@ -22,25 +33,37 @@ public:
     virtual Mat4x4 VP() const { return P() * V(); }
     virtual Mat4x4 MVP() const { return P() * V() * M(); }
 
-    virtual bool wireframe() { return false; }
+    virtual bool wireframe() const { return false; }
 
 };
 
-class Renderer : public Component {
+class Renderer {
 protected:
 
-    std::string shading_code;
+    Material material;
 
 public:
 
-    HEADERONLY_INLINE Renderer();
+    Renderer() {}
 
     virtual ~Renderer() {}
 
     virtual void render(const RenderContext&) = 0;
+
+    virtual void rebuild() {}
+
+    HEADERONLY_INLINE void set_material(const Material &material);
+
+    HEADERONLY_INLINE static void build_shader(Shader &shader, const Material &material, const std::string &vshader, const std::string &fshader);
+
+    HEADERONLY_INLINE static void update_shader(Shader &shader, const RenderContext &context);
 
 };
 
 //=============================================================================
 } // OpenGP::
 //=============================================================================
+
+#ifdef HEADERONLY
+    #include "Renderer.cpp"
+#endif

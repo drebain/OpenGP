@@ -4,6 +4,12 @@
 namespace OpenGP {
 //=============================================================================
 
+void Shader::clear() {
+    glDeleteProgram(pid);
+    _is_valid = false;
+    pid = glCreateProgram();
+}
+
 void Shader::set_uniform(const char* name, int scalar) {
     assert( check_is_current() );
     GLint loc = glGetUniformLocation(pid, name);
