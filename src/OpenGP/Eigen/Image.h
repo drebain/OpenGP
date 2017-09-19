@@ -5,6 +5,7 @@
 #include <OpenGP/GL/SceneObject.h>
 #include <OpenGP/GL/GlfwWindow.h>
 #include <stdio.h> //< to read targa file
+#include <png.h>
 
 //=============================================================================
 namespace OpenGP{
@@ -135,6 +136,65 @@ inline int imshow( EigenImage<PixelType>& I, const char* title="" ){
     ImageRenderer<PixelType> renderer(I);
     window.scene.add(renderer);
     return window.run();
+}
+
+using PNGPixelRGB  = Eigen::Matrix<GLubyte, 3, 1>;
+//using PNGPixelRGBA = Eigen::Matrix<GLubyte, 4, 1>;
+
+using PNGImageRGB  = Eigen::Matrix<PNGPixelRGB, Eigen::Dynamic, Eigen::Dynamic>;
+//using PNGImageRGBA = Eigen::Matrix<PNGPixelRGB, Eigen::Dynamic, Eigen::Dynamic>;
+
+static void imwrite_png(const char* path, const EigenImage<Vec3>& _I) {
+
+}
+
+template <typename ImageType>
+static void imread_png(const char* path, ImageType& I_out) {
+
+    FILE* fid = fopen(path,"rb");
+    GLubyte header[8];
+    if( fread(header, sizeof(header), 1, fid) != 1 )
+        mFatal() << "Cannot read TGA header";
+
+    if (png_sig_cmp(header, 0, 8))
+        mFatal() << "File is not a PNG image";
+
+    png_struct *read_struct = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    png_info *info_struct = png_create_info_struct(read_struct);
+
+    png_init_io(read_struct, fid);
+    png_set_sig_bytes(read_struct, 8);
+
+    png_read_info(read_struct, info_struct);
+
+    int width = png_get_image_width(read_struct, info_struct);
+    int height = png_get_image_height(read_struct, info_struct);
+    GLubyte color_type = png_get_color_type(read_struct, info_struct);
+    GLubyte bit_depth = png_get_bit_depth(read_struct, info_struct);
+
+    if (ImageType::Scalar::RowsAtCompileTime == 3) {
+        if (color_type != PNG_COLOR_TYPE_RGB) {
+            mFatal() << "Image color type does not match file";
+        }
+    } else if (ImageType::Scalar::RowsAtCompileTime == 4) {
+        if (color_type != PNG_COLOR_TYPE_RGB_ALPHA) {
+            mFatal() << "Image color type does not match file";
+        }
+    } else {
+        mFatal() << "Image color type does not match file";
+    }
+
+
+    int passes = png_set_interlace_handling(read_struct);
+    png_read_update_info(read_struct, info_struct);
+
+    Eigen::Matrix<GLubyte*, Eigen::Dynamic, Eigen::Dynamic> row_ptrs(height, 1);
+    //for (int i = 0;i < height;i++) {
+    //    row_ptrs(i) = &(I);
+    //}
+
+    mLogger() << (int)color_type;
+
 }
 
 // http://geekchef.com/using-targa-files
