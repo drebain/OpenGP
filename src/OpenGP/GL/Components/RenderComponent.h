@@ -8,11 +8,10 @@
 namespace OpenGP {
 //=============================================================================
 
-template <typename R>
 class RenderComponent : public Component {
 private:
 
-    R renderer;
+    std::unique_ptr<Renderer> renderer;
 
 };
 

@@ -26,7 +26,7 @@ int main(int argc, char** argv){
     window.set_title("Test Window");
 
     Scene scene;
-    auto &render_component = scene.create_entity_with<RenderComponent<SurfaceMeshRenderer>>();
+    auto &render_component = scene.create_entity_with<RenderComponent>();
 
     return app.run();
 }
