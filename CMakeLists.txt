@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 
 #--- where should I look for cmake config files?
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
- 
+
 #--- import libraries
 include(cmake/ConfigureCompiler.cmake)
 include(cmake/ConfigureEigen.cmake)
@@ -22,7 +22,7 @@ add_subdirectory(apps/glfwviewer_multiwin)
 add_subdirectory(apps/glfwviewer_debug)
 add_subdirectory(apps/glfwviewer_vquality)
 add_subdirectory(apps/imshow)
-add_subdirectory(apps/baker)
+#add_subdirectory(apps/baker)
 add_subdirectory(apps/subdivision)
 add_subdirectory(apps/isoremesh)
 #add_subdirectory(apps/qglviewer) # UNSTABLE / OBSOLETE

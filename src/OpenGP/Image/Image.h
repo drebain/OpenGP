@@ -64,30 +64,36 @@ protected:
 
     void *private_data;
 
+    int components, bit_depth;
+    int width, height;
+
 public:
 
-    //using ReadFunction = std::function<void(int, int, int, double)>;
-
-    std::string path;
-
-    //int components;
-    //int width, height;
+    using WriteFunction = std::function<double(int, int, int)>;
 
     virtual ~ImageWriter() {}
 
-    //virtual void read_info() = 0;
-    //virtual void read_data(const ReadFunction&) = 0;
+    int set_components(int components) { this->components = components; }
+    int set_bit_depth(int bit_depth) { this->bit_depth = bit_depth; }
+    int set_width(int width) { this->width = width; }
+    int set_height(int height) { this->height = height; }
+
+    virtual void write(const WriteFunction&) = 0;
 
 };
 
 class PNGWriter : public ImageWriter {
 public:
-    //~PNGWriter();
+    PNGWriter(const std::string &path);
+    ~PNGWriter();
+    void write(const WriteFunction&);
 };
 
 class TGAWriter : public ImageWriter {
 public:
-    //~TGAWriter();
+    TGAWriter(const std::string &path);
+    ~TGAWriter();
+    void write(const WriteFunction&);
 };
 
 
@@ -130,13 +136,23 @@ struct ImageTypeInfo<ImageType, typename std::enable_if<!std::is_base_of<Eigen::
 
 
 template <typename Scalar>
-typename std::enable_if<std::is_integral<Scalar>::value, Scalar>::type scalar_transfer(double val) {
+typename std::enable_if<std::is_integral<Scalar>::value, Scalar>::type scalar_transfer_read(double val) {
     return val * std::numeric_limits<Scalar>::max();
 }
 
 template <typename Scalar>
-typename std::enable_if<!std::is_integral<Scalar>::value, Scalar>::type scalar_transfer(double val) {
+typename std::enable_if<!std::is_integral<Scalar>::value, Scalar>::type scalar_transfer_read(double val) {
     return Scalar(val);
+}
+
+template <typename Scalar>
+typename std::enable_if<std::is_integral<Scalar>::value, double>::type scalar_transfer_write(Scalar val) {
+    return ((double)val) / std::numeric_limits<Scalar>::max();
+}
+
+template <typename Scalar>
+typename std::enable_if<!std::is_integral<Scalar>::value, double>::type scalar_transfer_write(Scalar val) {
+    return (double)val;
 }
 
 
@@ -175,16 +191,16 @@ void imread(const char* path, ImageType& I) {
         if (image_type_components < 4) {
             read_function = [&](int row, int col, int c, double val) {
                 for (int i = 0;i < image_type_components;i++) {
-                    ImageTypeInfo<ImageType>::channel_ref(I, row, col, i) = scalar_transfer<Scalar>(val);
+                    ImageTypeInfo<ImageType>::channel_ref(I, row, col, i) = scalar_transfer_read<Scalar>(val);
                 }
             };
         } else if (image_type_components == 4) {
             // set alpha to 1
             read_function = [&](int row, int col, int c, double val) {
                 for (int i = 0;i < 3;i++) {
-                    ImageTypeInfo<ImageType>::channel_ref(I, row, col, i) = scalar_transfer<Scalar>(val);
+                    ImageTypeInfo<ImageType>::channel_ref(I, row, col, i) = scalar_transfer_read<Scalar>(val);
                 }
-                ImageTypeInfo<ImageType>::channel_ref(I, row, col, 3) = scalar_transfer<Scalar>(1.0);
+                ImageTypeInfo<ImageType>::channel_ref(I, row, col, 3) = scalar_transfer_read<Scalar>(1.0);
             };
         } else {
             mFatal() << "Image type and image file are incompatible";
@@ -196,18 +212,18 @@ void imread(const char* path, ImageType& I) {
             // use average of rgb values
             I.setZero();
             read_function = [&](int row, int col, int c, double val) {
-                ImageTypeInfo<ImageType>::channel_ref(I, row, col, 0) += scalar_transfer<Scalar>(val / 3);
+                ImageTypeInfo<ImageType>::channel_ref(I, row, col, 0) += scalar_transfer_read<Scalar>(val / 3);
             };
         } else if (image_type_components == 3) {
             read_function = [&](int row, int col, int c, double val) {
-                ImageTypeInfo<ImageType>::channel_ref(I, row, col, c) = scalar_transfer<Scalar>(val);
+                ImageTypeInfo<ImageType>::channel_ref(I, row, col, c) = scalar_transfer_read<Scalar>(val);
             };
         } else if (image_type_components == 4) {
             // set alpha to 1
             read_function = [&](int row, int col, int c, double val) {
-                ImageTypeInfo<ImageType>::channel_ref(I, row, col, c) = scalar_transfer<Scalar>(val);
+                ImageTypeInfo<ImageType>::channel_ref(I, row, col, c) = scalar_transfer_read<Scalar>(val);
                 if (c == 2)
-                    ImageTypeInfo<ImageType>::channel_ref(I, row, col, 3) = scalar_transfer<Scalar>(1.0);
+                    ImageTypeInfo<ImageType>::channel_ref(I, row, col, 3) = scalar_transfer_read<Scalar>(1.0);
             };
         } else {
             mFatal() << "Image type and image file are incompatible";
@@ -220,17 +236,17 @@ void imread(const char* path, ImageType& I) {
             I.setZero();
             read_function = [&](int row, int col, int c, double val) {
                 if (c != 3)
-                    ImageTypeInfo<ImageType>::channel_ref(I, row, col, 1) += scalar_transfer<Scalar>(val / 3);
+                    ImageTypeInfo<ImageType>::channel_ref(I, row, col, 1) += scalar_transfer_read<Scalar>(val / 3);
             };
         } else if (image_type_components == 3) {
             // drop alpha channel
             read_function = [&](int row, int col, int c, double val) {
                 if (c < 3)
-                    ImageTypeInfo<ImageType>::channel_ref(I, row, col, c) = scalar_transfer<Scalar>(val);
+                    ImageTypeInfo<ImageType>::channel_ref(I, row, col, c) = scalar_transfer_read<Scalar>(val);
             };
         } else if (image_type_components == 4) {
             read_function = [&](int row, int col, int c, double val) {
-                ImageTypeInfo<ImageType>::channel_ref(I, row, col, c) = scalar_transfer<Scalar>(val);
+                ImageTypeInfo<ImageType>::channel_ref(I, row, col, c) = scalar_transfer_read<Scalar>(val);
             };
         } else {
             mFatal() << "Image type and image file are incompatible";
@@ -239,7 +255,7 @@ void imread(const char* path, ImageType& I) {
     } else if (image_type_components == reader->get_components()) {
 
         read_function = [&](int row, int col, int c, double val) {
-            ImageTypeInfo<ImageType>::channel_ref(I, row, col, c) = scalar_transfer<Scalar>(val);
+            ImageTypeInfo<ImageType>::channel_ref(I, row, col, c) = scalar_transfer_read<Scalar>(val);
         };
 
     } else {
@@ -251,7 +267,7 @@ void imread(const char* path, ImageType& I) {
 }
 
 template <typename ImageType>
-void imwrite(const char* path, const ImageType &I) {
+void imwrite(const char* path, ImageType &I) {
 
     std::regex suffix_regex(R"regex([\S\s]*\.([^\.]+)$)regex");
 
@@ -265,12 +281,49 @@ void imwrite(const char* path, const ImageType &I) {
     std::unique_ptr<ImageWriter> writer;
 
     if (suffix == "png") {
-        writer = std::unique_ptr<ImageWriter>(new PNGWriter());
+        writer = std::unique_ptr<ImageWriter>(new PNGWriter(path));
     } else if (suffix == "tga") {
-        writer = std::unique_ptr<ImageWriter>(new TGAWriter());
+        writer = std::unique_ptr<ImageWriter>(new TGAWriter(path));
     } else {
         mFatal() << "Unknown image type suffix";
     }
+
+    int image_type_components = ImageTypeInfo<ImageType>::component_count;
+    using Scalar = typename ImageTypeInfo<ImageType>::Scalar;
+
+    //mLogger() << image_type_components;
+
+    writer->set_width(I.cols());
+    writer->set_height(I.rows());
+    writer->set_components(image_type_components);
+    writer->set_bit_depth(8 * sizeof(Scalar));
+
+    ImageWriter::WriteFunction write_function;
+
+    if (image_type_components == 1) {
+        write_function = [&](int row, int col, int c) {
+            if (c < 3)
+                return scalar_transfer_write<Scalar>(ImageTypeInfo<ImageType>::channel_ref(I, row, col, 1));
+            else
+                return 1.0;
+        };
+    } else if (image_type_components == 3) {
+        write_function = [&](int row, int col, int c) {
+            if (c < 3)
+                return scalar_transfer_write<Scalar>(ImageTypeInfo<ImageType>::channel_ref(I, row, col, c));
+            else
+                return 1.0;
+        };
+    } else {
+        write_function = [&](int row, int col, int c) {
+            if (c < image_type_components)
+                return scalar_transfer_write<Scalar>(ImageTypeInfo<ImageType>::channel_ref(I, row, col, c));
+            else
+                mFatal() << "Image type and image file are incompatible";
+        };
+    }
+
+    writer->write(write_function);
 
 }
 

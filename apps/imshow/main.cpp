@@ -9,6 +9,8 @@ int main(int, char**){
 
     mLogger() << I(240, 300);
 
+    I(240, 300) = Vec4(1,0,0,1);
+
     imwrite("planet2.png", I);
 
     return EXIT_SUCCESS;
