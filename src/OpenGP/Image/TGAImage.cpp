@@ -10,11 +10,11 @@ TGAReader::~TGAReader() {
 
 }
 
-void TGAReader::read_info() {
+TGAReader::TGAReader(const std::string &path) {
 
 }
 
-void TGAReader::read_data(const ReadFunction &read_function) {
+void TGAReader::read(const ReadFunction &read_function) {
 
 }
 

@@ -28,36 +28,35 @@ protected:
 
     void *private_data;
 
+    int components;
+    int width, height;
+
 public:
 
     using ReadFunction = std::function<void(int, int, int, double)>;
 
-    std::string path;
-
-    int components;
-    int width, height;
+    int get_components() const { return components; }
+    int get_width() const { return width; }
+    int get_height() const { return height; }
 
     virtual ~ImageReader() {}
 
-    virtual void read_info() = 0;
-    virtual void read_data(const ReadFunction&) = 0;
-
-    void set_path(const std::string &path) { this->path = path; }
+    virtual void read(const ReadFunction&) = 0;
 
 };
 
 class PNGReader : public ImageReader {
 public:
+    PNGReader(const std::string &path);
     ~PNGReader();
-    void read_info();
-    void read_data(const ReadFunction&);
+    void read(const ReadFunction&);
 };
 
 class TGAReader : public ImageReader {
 public:
+    TGAReader(const std::string &path);
     ~TGAReader();
-    void read_info();
-    void read_data(const ReadFunction&);
+    void read(const ReadFunction&);
 };
 
 class ImageWriter {
@@ -79,28 +78,22 @@ public:
     //virtual void read_info() = 0;
     //virtual void read_data(const ReadFunction&) = 0;
 
-    void set_path(const std::string &path) { this->path = path; }
-
 };
 
 class PNGWriter : public ImageWriter {
 public:
-    ~PNGWriter();
-    //void read_info();
-    //void read_data(const ReadFunction&);
+    //~PNGWriter();
 };
 
 class TGAWriter : public ImageWriter {
 public:
-    ~TGAWriter();
-    //void read_info();
-    //void read_data(const ReadFunction&);
+    //~TGAWriter();
 };
 
 
 // --- Pixel type is a vector or matrix ----------------------------------------
 
-template <typename ImageType, typename=typename ImageType::Scalar::Scalar>
+template <typename ImageType, typename=void>
 struct ImageTypeInfo {
 
     static constexpr int component_count = ImageType::Scalar::RowsAtCompileTime * ImageType::Scalar::ColsAtCompileTime;
@@ -120,7 +113,7 @@ struct ImageTypeInfo {
 // --- Pixel type is not a vector or matrix ------------------------------------
 
 template <typename ImageType>
-struct ImageTypeInfo<ImageType, void> {
+struct ImageTypeInfo<ImageType, typename std::enable_if<!std::is_base_of<Eigen::EigenBase<typename ImageType::Scalar>, typename ImageType::Scalar>::value>::type> {
 
     static constexpr int component_count = 1;
 
@@ -162,25 +155,21 @@ void imread(const char* path, ImageType& I) {
     std::unique_ptr<ImageReader> reader;
 
     if (suffix == "png") {
-        reader = std::unique_ptr<ImageReader>(new PNGReader());
+        reader = std::unique_ptr<ImageReader>(new PNGReader(path));
     } else if (suffix == "tga") {
-        reader = std::unique_ptr<ImageReader>(new TGAReader());
+        reader = std::unique_ptr<ImageReader>(new TGAReader(path));
     } else {
         mFatal() << "Unknown image type suffix";
     }
 
-    reader->set_path(path);
-
-    reader->read_info();
-
-    I.resize(reader->height, reader->width);
+    I.resize(reader->get_height(), reader->get_width());
 
     int image_type_components = ImageTypeInfo<ImageType>::component_count;
     using Scalar = typename ImageTypeInfo<ImageType>::Scalar;
 
     ImageReader::ReadFunction read_function;
 
-    if (reader->components == 1) {
+    if (reader->get_components() == 1) {
 
         // duplicate single channel into first 3 provided channels
         if (image_type_components < 4) {
@@ -201,13 +190,13 @@ void imread(const char* path, ImageType& I) {
             mFatal() << "Image type and image file are incompatible";
         }
 
-    } else if (reader->components == 3) {
+    } else if (reader->get_components() == 3) {
 
         if (image_type_components == 1) {
             // use average of rgb values
             I.setZero();
             read_function = [&](int row, int col, int c, double val) {
-                ImageTypeInfo<ImageType>::channel_ref(I, row, col, 1) += scalar_transfer<Scalar>(val / 3);
+                ImageTypeInfo<ImageType>::channel_ref(I, row, col, 0) += scalar_transfer<Scalar>(val / 3);
             };
         } else if (image_type_components == 3) {
             read_function = [&](int row, int col, int c, double val) {
@@ -224,7 +213,7 @@ void imread(const char* path, ImageType& I) {
             mFatal() << "Image type and image file are incompatible";
         }
 
-    } else if (reader->components == 4) {
+    } else if (reader->get_components() == 4) {
 
         if (image_type_components == 1) {
             // use average of rgb values
@@ -247,7 +236,7 @@ void imread(const char* path, ImageType& I) {
             mFatal() << "Image type and image file are incompatible";
         }
 
-    } else if (image_type_components == reader->components) {
+    } else if (image_type_components == reader->get_components()) {
 
         read_function = [&](int row, int col, int c, double val) {
             ImageTypeInfo<ImageType>::channel_ref(I, row, col, c) = scalar_transfer<Scalar>(val);
@@ -257,12 +246,31 @@ void imread(const char* path, ImageType& I) {
         mFatal() << "Image type and image file are incompatible";
     }
 
-    reader->read_data(read_function);
+    reader->read(read_function);
 
 }
 
 template <typename ImageType>
 void imwrite(const char* path, const ImageType &I) {
+
+    std::regex suffix_regex(R"regex([\S\s]*\.([^\.]+)$)regex");
+
+    std::cmatch match;
+    if (!std::regex_match(path, match, suffix_regex))
+        mFatal() << "Could not identify the image file type";
+
+    std::string suffix = match[1];
+    std::transform(suffix.begin(), suffix.end(), suffix.begin(), ::tolower);
+
+    std::unique_ptr<ImageWriter> writer;
+
+    if (suffix == "png") {
+        writer = std::unique_ptr<ImageWriter>(new PNGWriter());
+    } else if (suffix == "tga") {
+        writer = std::unique_ptr<ImageWriter>(new TGAWriter());
+    } else {
+        mFatal() << "Unknown image type suffix";
+    }
 
 }
 

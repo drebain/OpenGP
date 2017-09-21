@@ -36,7 +36,7 @@ PNGReader::~PNGReader() {
 
 }
 
-void PNGReader::read_info() {
+PNGReader::PNGReader(const std::string &path) {
 
     private_data = new PNGReaderData();
 
@@ -60,7 +60,7 @@ void PNGReader::read_info() {
     png_structp &read_struct = data->read_struct;
     png_infop &info_struct = data->info_struct;
 
-    read_struct = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    read_struct = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
     info_struct = png_create_info_struct(read_struct);
 
     png_init_io(read_struct, fid);
@@ -74,7 +74,7 @@ void PNGReader::read_info() {
 
 }
 
-void PNGReader::read_data(const ReadFunction &read_function) {
+void PNGReader::read(const ReadFunction &read_function) {
 
     PNGReaderData *data = (PNGReaderData*)private_data;
 
