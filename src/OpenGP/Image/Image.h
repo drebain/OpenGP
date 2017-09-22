@@ -69,16 +69,16 @@ public:
 
 class PNGReader : public ImageReader {
 public:
-    PNGReader(const std::string &path);
-    ~PNGReader();
-    void read(const ReadFunction&);
+    HEADERONLY_INLINE PNGReader(const std::string &path);
+    HEADERONLY_INLINE ~PNGReader();
+    HEADERONLY_INLINE void read(const ReadFunction&);
 };
 
 class TGAReader : public ImageReader {
 public:
-    TGAReader(const std::string &path);
-    ~TGAReader();
-    void read(const ReadFunction&);
+    HEADERONLY_INLINE TGAReader(const std::string &path);
+    HEADERONLY_INLINE ~TGAReader();
+    HEADERONLY_INLINE void read(const ReadFunction&);
 };
 
 class ImageWriter {
@@ -106,16 +106,16 @@ public:
 
 class PNGWriter : public ImageWriter {
 public:
-    PNGWriter(const std::string &path);
-    ~PNGWriter();
-    void write(const WriteFunction&);
+    HEADERONLY_INLINE PNGWriter(const std::string &path);
+    HEADERONLY_INLINE ~PNGWriter();
+    HEADERONLY_INLINE void write(const WriteFunction&);
 };
 
 class TGAWriter : public ImageWriter {
 public:
-    TGAWriter(const std::string &path);
-    ~TGAWriter();
-    void write(const WriteFunction&);
+    HEADERONLY_INLINE TGAWriter(const std::string &path);
+    HEADERONLY_INLINE ~TGAWriter();
+    HEADERONLY_INLINE void write(const WriteFunction&);
 };
 
 
