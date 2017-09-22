@@ -4,18 +4,14 @@ using namespace OpenGP;
 
 int main(int, char**){
 
-    Image<Vec3> I;
+    Image<Vec4> I;
     imread("dice.png", I);
 
-    mLogger() << I(240, 300);
+    Image<Vec4> I2 = I.transpose();
 
-    for (int i = 0;i < 200;i++) {
-        for (int j = 0;j < 200;j++) {
-            I(i, j) = Vec3(0.9,0,0);
-        }
-    }
+    imshow(I2);
 
-    imwrite("dice2.png", I);
+    imwrite("dice2.png", I2);
 
     return EXIT_SUCCESS;
 }

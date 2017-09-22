@@ -186,7 +186,7 @@ void PNGWriter::write(const WriteFunction &write_function) {
     } else {
         mFatal() << "Unsupported PNG color type";
     }
-    
+
     if (!(bit_depth == 8 || bit_depth == 16)) {
         bit_depth = 16;
     }
@@ -211,7 +211,7 @@ void PNGWriter::write(const WriteFunction &write_function) {
 
                 double val = write_function(row, col, c);
 
-                uint32_t int_val = val * (((uint64_t)0x1) << bit_depth);
+                uint32_t int_val = val * ((((uint64_t)0x1) << bit_depth) - 1);
 
                 int start_idx = (components * col + c) * (bit_depth / 8);
                 for (int i=(bit_depth/8)-1;i >= 0;i--) {

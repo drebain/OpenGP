@@ -14,14 +14,36 @@
 #include <OpenGP/headeronly.h>
 #include <OpenGP/types.h>
 #include <OpenGP/MLogger.h>
+#include <OpenGP/GL/gl.h>
+#include <OpenGP/GL/GlfwWindow.h>
+#include <OpenGP/GL/FullscreenQuad.h>
+#include <OpenGP/GL/SceneObject.h>
+#include <OpenGP/Image/ImageType.h>
 
 //=============================================================================
 namespace OpenGP {
 //=============================================================================
 
+template <class ImageType>
+inline int imshow(const ImageType &I, const std::string &title="") {
 
-template <class PixelType>
-using Image = Eigen::Matrix< PixelType, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor >;
+    GlfwWindow window(title, I.cols(), I.rows());
+
+    constexpr int components = ImageTypeInfo<ImageType>::component_count;
+    using Scalar = typename ImageTypeInfo<ImageType>::Scalar;
+    using TextureType = typename TextureTypeBuilder<ImageType>::Type;
+
+    TextureType texture;
+    texture.upload(I);
+
+    FullscreenQuad fs_quad;
+
+    window.set_user_update_fn([&](){
+        fs_quad.draw_texture(texture);
+    });
+
+    return window.run();
+}
 
 class ImageReader {
 protected:
@@ -95,44 +117,6 @@ public:
     ~TGAWriter();
     void write(const WriteFunction&);
 };
-
-
-// --- Pixel type is a vector or matrix ----------------------------------------
-
-template <typename ImageType, typename=void>
-struct ImageTypeInfo {
-
-    static constexpr int component_count = ImageType::Scalar::RowsAtCompileTime * ImageType::Scalar::ColsAtCompileTime;
-
-    using Scalar = typename ImageType::Scalar::Scalar;
-
-    static Scalar &channel_ref(ImageType &I, int row, int col, int c) {
-        assert(c < component_count && c >= 0);
-        return I(row, col)(c);
-    }
-
-};
-
-// -----------------------------------------------------------------------------
-
-
-// --- Pixel type is not a vector or matrix ------------------------------------
-
-template <typename ImageType>
-struct ImageTypeInfo<ImageType, typename std::enable_if<!std::is_base_of<Eigen::EigenBase<typename ImageType::Scalar>, typename ImageType::Scalar>::value>::type> {
-
-    static constexpr int component_count = 1;
-
-    using Scalar = typename ImageType::Scalar;
-
-    static Scalar &channel_ref(ImageType &I, int row, int col, int c) {
-        assert(c == 0);
-        return I(row, col);
-    }
-
-};
-
-// -----------------------------------------------------------------------------
 
 
 template <typename Scalar>
@@ -236,7 +220,7 @@ void imread(const char* path, ImageType& I) {
             I.setZero();
             read_function = [&](int row, int col, int c, double val) {
                 if (c != 3)
-                    ImageTypeInfo<ImageType>::channel_ref(I, row, col, 1) += scalar_transfer_read<Scalar>(val / 3);
+                    ImageTypeInfo<ImageType>::channel_ref(I, row, col, 0) += scalar_transfer_read<Scalar>(val / 3);
             };
         } else if (image_type_components == 3) {
             // drop alpha channel
@@ -303,7 +287,7 @@ void imwrite(const char* path, ImageType &I) {
     if (image_type_components == 1) {
         write_function = [&](int row, int col, int c) {
             if (c < 3)
-                return scalar_transfer_write<Scalar>(ImageTypeInfo<ImageType>::channel_ref(I, row, col, 1));
+                return scalar_transfer_write<Scalar>(ImageTypeInfo<ImageType>::channel_ref(I, row, col, 0));
             else
                 return 1.0;
         };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OpenGP/GL/gl.h>
+#include <OpenGP/GL/Shader.h>
 #include <OpenGP/GL/Buffer.h>
 #include <OpenGP/GL/VertexArrayObject.h>
 
