@@ -245,10 +245,6 @@ void PNGWriter::write(const WriteFunction &write_function) {
 
 #else
 
-#ifdef HEADERONLY
-#error Header only builds are not supported with LodePNG
-#endif
-
 namespace {
 
     struct PNGReaderData {
@@ -278,6 +274,12 @@ PNGReader::~PNGReader() {
 
 PNGReader::PNGReader(const std::string &path) {
 
+#ifdef HEADERONLY
+
+    mFatal() << "PNG support is not availible: to enable PNG support in header-only mode, define USE_PNG and include libpng in your build system";
+
+#else
+
     private_data = new PNGReaderData();
 
     PNGReaderData *data = (PNGReaderData*)private_data;
@@ -294,6 +296,8 @@ PNGReader::PNGReader(const std::string &path) {
     if(err) {
         mFatal() << "lodepng error:" << lodepng_error_text(err);
     }
+
+#endif
 
 }
 
@@ -320,11 +324,19 @@ void PNGReader::read(const ReadFunction &read_function) {
 
 PNGWriter::PNGWriter(const std::string &path) {
 
+#ifdef HEADERONLY
+
+    mFatal() << "PNG support is not availible: to enable PNG support in header-only mode, define USE_PNG and include libpng in your build system";
+
+#else
+
     private_data = new PNGWriterData();
 
     PNGWriterData *data = (PNGWriterData*)private_data;
 
     data->path = path;
+
+#endif
 
 }
 
@@ -341,6 +353,8 @@ PNGWriter::~PNGWriter() {
 }
 
 void PNGWriter::write(const WriteFunction &write_function) {
+
+#ifndef HEADERONLY
 
     PNGWriterData *data = (PNGWriterData*)private_data;
 
@@ -376,6 +390,8 @@ void PNGWriter::write(const WriteFunction &write_function) {
     if(err) {
         mFatal() << "lodepng error:" << lodepng_error_text(err);
     }
+
+#endif
 
 }
 
