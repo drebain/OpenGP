@@ -1,3 +1,15 @@
+// This file is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Library General Public License Version 2
+// as published by the Free Software Foundation.
+//
+// This file is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Library General Public License for more details.
+//
+// You should have received a copy of the GNU Library General Public
+// License along with OpenGP.  If not, see <http://www.gnu.org/licenses/>.
+
 //== INCLUDES =================================================================
 
 #include <OpenGP/SurfaceMesh/SurfaceMesh.h>
@@ -52,7 +64,7 @@ private:
 bool read_stl(SurfaceMesh& mesh, const std::string& filename){
     // typedef Vec3 Normal;
     // typedef Vec3 TextureCoordinate;
-    
+
     char                            line[100], *c;
     unsigned int                    i, nT;
     Vec3                            p;

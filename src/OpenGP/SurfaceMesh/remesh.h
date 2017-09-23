@@ -1,3 +1,15 @@
+// This file is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Library General Public License Version 2
+// as published by the Free Software Foundation.
+//
+// This file is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Library General Public License for more details.
+//
+// You should have received a copy of the GNU Library General Public
+// License along with OpenGP.  If not, see <http://www.gnu.org/licenses/>.
+
 #pragma once
 #include <OpenGP/headeronly.h>
 #include <OpenGP/types.h>
@@ -25,9 +37,9 @@ class IsotropicRemesher{
     const std::string FNORMAL = "f:normal";         ///< face normals
     const std::string FAREA = "f:area";             ///< face area
     const std::string ELENGTH = "e:length";         ///< edge length
-    const std::string FSELECTED = "f:selected";     ///< is face selected?    
+    const std::string FSELECTED = "f:selected";     ///< is face selected?
     /// @}
-    
+
 private:
     SurfaceMesh::Vertex_property<Vec3> points;
     SurfaceMesh::Edge_property<bool> efeature;
@@ -38,10 +50,10 @@ public:
         this->mesh = &_mesh;
         efeature = mesh->edge_property<bool>("e:feature", false);
         points = mesh->vertex_property<Vec3>(VPOINT);
-         
+
         if(reproject_to_surface)
             copy = *mesh; ///< deep copy
-        
+
 #ifdef WITH_CGAL
         VerticesMatrixMap vertices = vertices_matrix(*mesh);
         TrianglesMatrix faces = faces_matrix(*mesh);
@@ -53,18 +65,18 @@ public:
     ~IsotropicRemesher(){
         mesh->remove_edge_property(efeature);
     }
-   
+
 /// @{ core methods
-public:    
+public:
     void execute();
 protected:
     void phase_analyze();
     void phase_remesh();
-/// @} 
+/// @}
 
 /// @{ algorithm parameters
 private:
-    NullStream nullstream;    
+    NullStream nullstream;
 public:
     /// Where should I send the algorithm output to?
     std::ostream* myout = &(nullstream);
@@ -80,14 +92,14 @@ public:
     /// defined by vertex + vertex normal?
     bool reproject_on_tanget = true;
     /// After tangentially relaxing vertices, should I project on the original surface (slow, query an AABB search tree)
-    bool reproject_to_surface = false;     
+    bool reproject_to_surface = false;
 /// @}
-    
+
 #ifdef WITH_CGAL
 private:
     AABBSearcher<VerticesMatrixMap, TrianglesMatrix> searcher;
 #endif
-    
+
 /// @{ utilities
 private:
     void splitLongEdges(Scalar maxEdgeLength);

@@ -1,3 +1,15 @@
+// This file is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Library General Public License Version 2
+// as published by the Free Software Foundation.
+//
+// This file is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Library General Public License for more details.
+//
+// You should have received a copy of the GNU Library General Public
+// License along with OpenGP.  If not, see <http://www.gnu.org/licenses/>.
+
 #pragma once
 #include <vector>
 #include <OpenGP/MLogger.h>
@@ -14,7 +26,7 @@ namespace OpenGP {
 class SurfaceMeshRenderVertexNormals : public SegmentsRenderer{
 protected:
     SurfaceMesh& mesh;
-    
+
 public:
     SurfaceMeshRenderVertexNormals(SurfaceMesh& mesh, Scalar offset=.1) : mesh(mesh){
         this->color = Vec3(0,0,1); ///< blue normals
@@ -25,7 +37,7 @@ public:
     }
     Box3 bounding_box(){ return OpenGP::bounding_box(mesh); }
 };
-    
+
 //=============================================================================
 } // namespace OpenGP
 //=============================================================================

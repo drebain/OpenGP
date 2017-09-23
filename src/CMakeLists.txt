@@ -11,7 +11,7 @@ if(OPENGP_HEADERONLY)
     message(STATUS "Not building libOpenGP.dylib (header-only)")
     return()
 else()
-    message(STATUS "Building libOpenGP.dylib")    
+    message(STATUS "Building libOpenGP.dylib")
 endif()
 
 #--- Gets rid of annoying CMake 3 warnings
@@ -26,6 +26,7 @@ include_directories(${CMAKE_CURRENT_LIST_DIR})
 include(ConfigureOpenGL)
 include(ConfigureGLFW3)
 include(ConfigureGLEW)
+include(ConfigurePNG)
 
 #--- Prevents OpenGP from self-linking!!
 #message(STATUS "LIBRARIES: ${LIBRARIES}")
@@ -55,6 +56,6 @@ set_target_properties(OpenGP PROPERTIES VERSION 1.0)
 #configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
 #               "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
 #               IMMEDIATE @ONLY)
-#add_custom_target(uninstall COMMAND 
-#                  ${CMAKE_COMMAND} -P 
+#add_custom_target(uninstall COMMAND
+#                  ${CMAKE_COMMAND} -P
 #                  ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)

@@ -1,7 +1,12 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 #pragma once
 
 #include <OpenGP/GL/GPUMesh.h>
 #include <OpenGP/GL/Texture.h>
+#include <OpenGP/MLogger.h>
 
 
 //=============================================================================
@@ -19,7 +24,7 @@ private:
 
         void main(){
             gl_Position = vec4(vposition, 1);
-            uv = vec2((vposition.x + 1) / 2, (vposition.y + 1) / 2);
+            uv = vec2((vposition.x + 1) / 2, 1 - (vposition.y + 1) / 2);
         }
     )GLSL";
 
@@ -27,12 +32,15 @@ private:
         #version 330 core
 
         uniform sampler2D tex;
+        uniform int grayscale;
 
         in vec2 uv;
         out vec4 fcolor;
 
         void main(){
-            fcolor = texture2D(tex, uv);
+            vec4 full_color = texture2D(tex, uv);
+            float red = full_color.r;
+            fcolor = (1 - grayscale) * full_color + grayscale * vec4(red, red, red, 1);
         }
     )GLSL";
 
@@ -78,8 +86,18 @@ public:
     virtual ~FullscreenQuad() {}
 
     void draw_texture(GenericTexture &texture) {
+        draw_texture(texture, default_shader);
+    }
 
-        default_shader.bind();
+    void draw_texture(GenericTexture &texture, Shader &shader) {
+
+        shader.bind();
+
+        if (texture.get_format() == GL_RED) {
+            shader.set_uniform("grayscale", 1);
+        } else {
+            shader.set_uniform("grayscale", 0);
+        }
 
         glActiveTexture(GL_TEXTURE0); // is this needed?
         texture.bind();
@@ -88,7 +106,7 @@ public:
 
         texture.unbind();
 
-        default_shader.unbind();
+        shader.unbind();
 
     }
 
