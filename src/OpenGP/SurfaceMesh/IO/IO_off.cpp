@@ -1,3 +1,15 @@
+// This file is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Library General Public License Version 2
+// as published by the Free Software Foundation.
+//
+// This file is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Library General Public License for more details.
+//
+// You should have received a copy of the GNU Library General Public
+// License along with OpenGP.  If not, see <http://www.gnu.org/licenses/>.
+
 #include <OpenGP/SurfaceMesh/SurfaceMesh.h>
 #include <OpenGP/SurfaceMesh/IO/IO.h>
 #include <cstdio>
@@ -15,7 +27,7 @@ inline bool read_off_ascii(SurfaceMesh& mesh,
     typedef Vec3 Normal;
     typedef Vec3 TextureCoordinate;
     typedef Vec3 Color;
-    
+
     char                 line[200], *lp;
     int                  nc;
     unsigned int         i, j, items, idx;
@@ -23,7 +35,7 @@ inline bool read_off_ascii(SurfaceMesh& mesh,
     Vec3                 p, n, c;
     Vec2                 t;
     SurfaceMesh::Vertex v;
-    
+
     // properties
     SurfaceMesh::Vertex_property<Normal>              normals;
     SurfaceMesh::Vertex_property<TextureCoordinate>  texcoords;
@@ -126,7 +138,7 @@ inline bool read_off_binary(SurfaceMesh& mesh,
 {
     typedef Vec3 Normal;
     typedef Vec3 TextureCoordinate;
-    
+
     unsigned int       i, j, idx;
     unsigned int       nV, nF, nE;
     Vec3               p, n, c;
@@ -223,7 +235,7 @@ bool read_off(SurfaceMesh& mesh, const std::string& filename)
         // printf("%c\n",c[0]);
         if(c[0]!='#') break;
     }
-    
+
     // read header: [ST][C][N][4][n]OFF BINARY
     if (c[0] == 'S' && c[1] == 'T') { has_texcoords = true; c += 2; }
     if (c[0] == 'C') { has_colors  = true; ++c; }
@@ -270,9 +282,9 @@ bool write_off(const SurfaceMesh& mesh, const std::string& filename)
 {
     typedef Vec3 Normal;
     typedef Vec3 Color;
-    typedef Vec3 TextureCoordinate;  
+    typedef Vec3 TextureCoordinate;
     typedef Vec3 Point;
-    
+
     FILE* out = fopen(filename.c_str(), "w");
     if (!out)
         return false;
@@ -309,9 +321,9 @@ bool write_off(const SurfaceMesh& mesh, const std::string& filename)
         } else {
             const Color& c = vcolor[*vit] * 255;
             int r = c[0], g = c[1], b=c[2];
-            fprintf(out, "%.10f %.10f %.10f %d %d %d %d", p[0], p[1], p[2], r, g, b, 255);            
+            fprintf(out, "%.10f %.10f %.10f %d %d %d %d", p[0], p[1], p[2], r, g, b, 255);
         }
-            
+
         if (has_normals)
         {
             const Normal& n = normals[*vit];

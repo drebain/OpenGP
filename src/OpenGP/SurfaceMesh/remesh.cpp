@@ -1,3 +1,15 @@
+// This file is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Library General Public License Version 2
+// as published by the Free Software Foundation.
+//
+// This file is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Library General Public License for more details.
+//
+// You should have received a copy of the GNU Library General Public
+// License along with OpenGP.  If not, see <http://www.gnu.org/licenses/>.
+
 #include "remesh.h"
 #include "OpenGP/SurfaceMesh/SurfaceMesh.h"
 
@@ -244,7 +256,7 @@ inline static bool TestSphereTriangle(Point sphereCenter, Scalar sphereRadius, P
 /// performs edge splits until all edges are shorter than the threshold
 void IsotropicRemesher::splitLongEdges(Scalar maxEdgeLength ) {
     *myout << __FUNCTION__ << std::endl;
-    
+
     const Scalar maxEdgeLengthSqr = maxEdgeLength * maxEdgeLength;
 
     SurfaceMesh::Edge_iterator e_it;
@@ -272,7 +284,7 @@ void IsotropicRemesher::splitLongEdges(Scalar maxEdgeLength ) {
 
             mesh->split(*e_it, vh);
             n_splits++;
-            
+
             if ( hadFeature ) {
                 for(SurfaceMesh::Halfedge e: mesh->halfedges(vh)) {
                     if ( mesh->to_vertex(e) == v0 || mesh->to_vertex(e) == v1 ) {
@@ -282,14 +294,14 @@ void IsotropicRemesher::splitLongEdges(Scalar maxEdgeLength ) {
             }
         }
     }
-    
+
     *myout << "    split " << n_splits << " edges" << std::endl;
 }
 
 /// collapse edges shorter than minEdgeLength if collapsing doesn't result in new edge longer than maxEdgeLength
 void IsotropicRemesher::collapseShortEdges(const Scalar _minEdgeLength, const Scalar _maxEdgeLength, bool isKeepShortEdges ) {
     *myout << __FUNCTION__ << std::endl;
-    
+
     const Scalar _minEdgeLengthSqr = _minEdgeLength * _minEdgeLength;
     const Scalar _maxEdgeLengthSqr = _maxEdgeLength * _maxEdgeLength;
 
@@ -350,14 +362,14 @@ void IsotropicRemesher::collapseShortEdges(const Scalar _minEdgeLength, const Sc
     }
 
     *myout << "    collapsed " << n_collapsed << " edges" << std::endl;
-    
+
     mesh->remove_edge_property(checked);
     mesh->garbage_collection();
 }
 
 void IsotropicRemesher::equalizeValences(){
     *myout << __FUNCTION__ << std::endl;
-    
+
     SurfaceMesh::Edge_iterator e_it;
     SurfaceMesh::Edge_iterator e_end = mesh->edges_end();
 
@@ -422,7 +434,7 @@ inline bool IsotropicRemesher::isFeature(const SurfaceMesh::Vertex& _vh ) {
 
 void IsotropicRemesher::tangentialRelaxation() {
     *myout << __FUNCTION__ << std::endl;
-    
+
     ///--- Tangential relaxation needs vertex normals
     mesh->update_face_normals();
     mesh->update_vertex_normals();
@@ -503,7 +515,7 @@ Vec3 IsotropicRemesher::findNearestPoint(SurfaceMesh& original_mesh, const Vec3&
 
 void IsotropicRemesher::projectToSurface() {
     *myout << __FUNCTION__ << std::endl;
-    
+
 #ifdef WITH_CGAL
     for(SurfaceMesh::Vertex v: mesh->vertices())
         points[v] = searcher.closest_point(points[v]);
@@ -542,7 +554,7 @@ void IsotropicRemesher::phase_analyze(){
         if(std::abs(dihedral)>TH)
             efeature[e] = true;
     }
-    
+
     ///--- Mark short edges as features
     if(keep_short_edges){
         for(SurfaceMesh::Edge e: mesh->edges()) {
@@ -568,7 +580,7 @@ void IsotropicRemesher::phase_analyze(){
 void IsotropicRemesher::phase_remesh(){
     const Scalar low  = (4.0 / 5.0) * longest_edge_length;
     const Scalar high = (4.0 / 3.0) * longest_edge_length;
-    
+
     for(int i = 0; i < num_iterations; i++) {
         *myout << "---------------------------------------------" << std::endl;
         *myout << "Iteration: " << (i+1) << "/" << num_iterations <<

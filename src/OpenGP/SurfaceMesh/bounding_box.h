@@ -1,3 +1,15 @@
+// This file is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Library General Public License Version 2
+// as published by the Free Software Foundation.
+//
+// This file is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Library General Public License for more details.
+//
+// You should have received a copy of the GNU Library General Public
+// License along with OpenGP.  If not, see <http://www.gnu.org/licenses/>.
+
 #pragma once
 #include <OpenGP/SurfaceMesh/SurfaceMesh.h>
 
@@ -47,14 +59,14 @@ inline Box3 bbox_cubified(const Box3& box){
 
 /// Slightly enlarges the bounding box by a given factor (about center)
 inline Box3 bbox_scaled(const Box3& box, Scalar factor){
-    // TODO: move this function to OpenGP/Types    
+    // TODO: move this function to OpenGP/Types
     Vec3 centre = box.center();
     Vec3 d2 = .5 * box.diagonal();
     Vec3 bMin = centre - factor * d2;
     Vec3 bMax = centre + factor * d2;
     return Box3(bMin, bMax);
 }
-   
+
 //=============================================================================
 } // namespace OpenGP
 //=============================================================================

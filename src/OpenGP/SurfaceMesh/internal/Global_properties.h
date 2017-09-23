@@ -1,3 +1,15 @@
+// This file is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Library General Public License Version 2
+// as published by the Free Software Foundation.
+//
+// This file is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Library General Public License for more details.
+//
+// You should have received a copy of the GNU Library General Public
+// License along with OpenGP.  If not, see <http://www.gnu.org/licenses/>.
+
 #pragma once
 #include <stdexcept>
 #include <string>
@@ -7,18 +19,18 @@
 namespace OpenGP {
 //=============================================================================
 
-/// Class to add global properties support to OpenGP objects 
+/// Class to add global properties support to OpenGP objects
 /// @see examples/global_properties.cpp
 class Global_properties{
     /// Base
     class Base_global_property{
     public:
         const std::type_info& mytype;
-        Base_global_property(const std::type_info& mytype=typeid(void)) 
+        Base_global_property(const std::type_info& mytype=typeid(void))
             : mytype( mytype ){}
     };
-    
-    /// Templated 
+
+    /// Templated
     template <class T>
     class Global_property : public Base_global_property{
     public:
@@ -29,7 +41,7 @@ class Global_properties{
 private:
     typedef std::map<std::string, Base_global_property*> PropertiesMap;
     PropertiesMap global_props_;
-    
+
 public:
     ~Global_properties(){
         // std::cout << global_props_.size() << std::endl;
@@ -38,8 +50,8 @@ public:
     }
 
 public:
-    /// Generic 
-    template <class T> 
+    /// Generic
+    template <class T>
     T& add_property(const std::string& name){
         if(global_props_.find(name) != global_props_.end())
             throw std::runtime_error("Attempted to create property with same name");
@@ -47,23 +59,23 @@ public:
         global_props_[name] = prop;
         return prop->value; ///<return a reference
     }
-    
+
     /// Generic with immediate initialization
-    template <class T> 
+    template <class T>
     T& add_property(const std::string& name, const T& initval){
         T& val = add_property<T>(name);
         val = initval;
         return val;
     }
-    
+
     // get a property by its name. returns invalid property if it does not exist.
-    template <class T> 
+    template <class T>
     T& get_property(const std::string& name){
         if(global_props_.find(name) == global_props_.end())
             throw std::runtime_error("Cannot find property");
         if(global_props_[name]->mytype != typeid(T))
             throw std::runtime_error("Property of desired type not found");
-        /// Now static cast is safe            
+        /// Now static cast is safe
         Global_property<T>* prop = static_cast< Global_property<T>* >(global_props_[name]);
         return prop->value;
     }
