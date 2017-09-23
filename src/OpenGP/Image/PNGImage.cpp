@@ -4,8 +4,6 @@
 
 #include <stdio.h>
 
-#undef USE_PNG
-
 #ifdef USE_PNG
 #include <png.h>
 #else
@@ -300,8 +298,6 @@ PNGReader::PNGReader(const std::string &path) {
 }
 
 void PNGReader::read(const ReadFunction &read_function) {
-
-    mLogger() << "Hey there";
 
     PNGReaderData *data = (PNGReaderData*)private_data;
 
