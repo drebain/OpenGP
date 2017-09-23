@@ -1,6 +1,16 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 #include <stdio.h>
 
+#undef USE_PNG
+
+#ifdef USE_PNG
 #include <png.h>
+#else
+#include <OpenGP/external/LodePNG/lodepng.h>
+#endif
 
 #include "Image.h"
 
@@ -9,6 +19,8 @@
 //=============================================================================
 namespace OpenGP {
 //=============================================================================
+
+#ifdef USE_PNG
 
 namespace {
 
@@ -233,6 +245,145 @@ void PNGWriter::write(const WriteFunction &write_function) {
 
 }
 
+#else
+
+#ifdef HEADERONLY
+#error Header only builds are not supported with LodePNG
+#endif
+
+namespace {
+
+    struct PNGReaderData {
+
+        std::vector<uint8_t> pixels;
+
+    };
+
+    struct PNGWriterData {
+
+        std::string path;
+
+    };
+
+}
+
+PNGReader::~PNGReader() {
+
+    if (private_data == nullptr)
+        return;
+
+    PNGReaderData *data = (PNGReaderData*)private_data;
+
+    delete data;
+
+}
+
+PNGReader::PNGReader(const std::string &path) {
+
+    private_data = new PNGReaderData();
+
+    PNGReaderData *data = (PNGReaderData*)private_data;
+
+    uint32_t width, height;
+
+    uint32_t err = lodepng::decode(data->pixels, width, height, path.c_str());
+
+    this->width = width;
+    this->height = height;
+
+    components = 4;
+
+    if(err) {
+        mFatal() << "lodepng error:" << lodepng_error_text(err);
+    }
+
+}
+
+void PNGReader::read(const ReadFunction &read_function) {
+
+    mLogger() << "Hey there";
+
+    PNGReaderData *data = (PNGReaderData*)private_data;
+
+    int i = 0;
+
+    for (int row=0;row < height;row++) {
+        for (int col=0;col < width;col++) {
+            for (int c=0;c < components;c++) {
+
+                uint8_t val = data->pixels[i];
+
+                read_function(row, col, c, ((double)val) / 255);
+
+                i++;
+            }
+        }
+    }
+
+}
+
+PNGWriter::PNGWriter(const std::string &path) {
+
+    private_data = new PNGWriterData();
+
+    PNGWriterData *data = (PNGWriterData*)private_data;
+
+    data->path = path;
+
+}
+
+PNGWriter::~PNGWriter() {
+
+    if (private_data == nullptr)
+        return;
+
+    PNGWriterData *data = (PNGWriterData*)private_data;
+
+    delete data;
+
+
+}
+
+void PNGWriter::write(const WriteFunction &write_function) {
+
+    PNGWriterData *data = (PNGWriterData*)private_data;
+
+    std::vector<uint8_t> pixels;
+
+    for (int row=0;row < height;row++) {
+        for (int col=0;col < width;col++) {
+            for (int c=0;c < 4;c++) {
+
+                uint8_t val;
+
+                if (c < components) {
+
+                    val = write_function(row, col, c) * 255;
+
+                } else if (c < 3) {
+
+                    val = 0;
+
+                } else {
+
+                    val = 255;
+
+                }
+
+                pixels.push_back(val);
+            }
+        }
+    }
+
+    uint32_t err = lodepng::encode(data->path.c_str(), pixels, width, height);
+
+    if(err) {
+        mFatal() << "lodepng error:" << lodepng_error_text(err);
+    }
+
+}
+
+#endif
 
 //=============================================================================
 } // OpenGP::
