@@ -6,6 +6,7 @@
 #include <OpenGP/GL/Application.h>
 #include <OpenGP/GL/Scene.h>
 #include <OpenGP/GL/Components/RenderComponent.h>
+#include <OpenGP/GL/Components/CameraComponent.h>
 #include <OpenGP/SurfaceMesh/SurfaceMesh.h>
 #include <OpenGP/SurfaceMesh/GL/SurfaceMeshRenderer.h>
 

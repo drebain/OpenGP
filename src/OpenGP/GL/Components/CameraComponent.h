@@ -5,6 +5,7 @@
 #pragma once
 
 #include <OpenGP/GL/Component.h>
+#include <OpenGP/GL/Components/TransformComponent.h>
 #include <OpenGP/GL/Renderer.h>
 
 
@@ -19,7 +20,10 @@ private:
 public:
 
     CameraComponent() {
-        require<TransformComponent>();
+    }
+
+    void init() {
+        get_entity().require<TransformComponent>();
     }
 
 };

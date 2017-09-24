@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <OpenGP/types.h>
 #include <OpenGP/GL/Component.h>
 
 
@@ -14,6 +15,9 @@ namespace OpenGP {
 class TransformComponent : public Component {
 private:
 
+    Vec3 translation;
+    Vec3 scale;
+    Quaternion rotation;
 
 public:
 
