@@ -28,10 +28,13 @@ int Application::run() {
             if ((*it).should_close())
                 to_close.push_back(it);
 
-        for (auto it : to_close)
+        for (auto it : to_close) {
             windows.erase(it);
+        }
 
-            running = false;
+        update_callback();
+
+        running = false;
 
         for (auto &window : windows) {
 
@@ -54,6 +57,10 @@ Window &Application::create_window() {
 
     return window;
 
+}
+
+void Application::set_update_callback(std::function<void()> fn) {
+    update_callback = fn;
 }
 
 //=============================================================================

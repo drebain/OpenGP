@@ -9,6 +9,7 @@
 #include <typeindex>
 #include <cassert>
 
+#include <OpenGP/headeronly.h>
 #include <OpenGP/GL/Component.h>
 
 
@@ -32,18 +33,24 @@ public:
 
     Entity() {}
 
-    void update();
+    HEADERONLY_INLINE void update();
 
     Entity(const Entity&) = delete;
     Entity &operator=(const Entity&) = delete;
 
     template <typename T>
     T &require() {
+        assert(scene != nullptr);
+
         if (has<T>())
             return get<T>();
 
         T *component = new T();
         components[std::type_index(typeid(T))] = std::unique_ptr<Component>(component);
+
+        component->entity = this;
+        component->init();
+
         return *component;
     }
 
@@ -56,6 +63,8 @@ public:
     T &get() {
         return dynamic_cast<T&>(*(components[std::type_index(typeid(T))]));
     }
+
+    HEADERONLY_INLINE Scene &get_scene();
 
 };
 

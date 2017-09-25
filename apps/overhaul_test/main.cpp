@@ -27,8 +27,13 @@ int main(int argc, char** argv){
     window.set_title("Test Window");
 
     Scene scene;
+
+    app.set_update_callback([&](){scene.update();});
+
     auto &bunny = scene.create_entity_with<RenderComponent>();
     auto &cam = scene.create_entity_with<CameraComponent>();
+
+    window.set_display_callback([&](Window &window){cam.draw_frame(window);});
 
     return app.run();
 }

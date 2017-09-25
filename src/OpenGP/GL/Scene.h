@@ -6,6 +6,7 @@
 
 #include <list>
 
+#include <OpenGP/headeronly.h>
 #include <OpenGP/GL/Entity.h>
 
 
@@ -25,11 +26,18 @@ public:
     Entity &create_entity();
 
     template <typename T>
-    Entity &create_entity_with() {
+    T &create_entity_with() {
         auto &entity = create_entity();
-        entity.require<T>();
-        return entity;
+        T &t = entity.require<T>();
+        return t;
     }
+
+    //template <typename T>
+    //SimpleIterable<T> all_of_type() {
+    //
+    //}
+
+    HEADERONLY_INLINE void update();
 
 };
 

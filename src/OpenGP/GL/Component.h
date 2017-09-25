@@ -11,6 +11,7 @@
 namespace OpenGP {
 //=============================================================================
 
+class Scene;
 class Entity;
 
 class Component {
@@ -35,6 +36,7 @@ public:
     virtual void update() {}
 
     Entity &get_entity() { assert(entity != nullptr); return *entity; }
+    Entity &get_scene() { return get_entity().get_scene(); }
 
 };
 

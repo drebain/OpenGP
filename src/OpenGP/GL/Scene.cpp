@@ -13,7 +13,17 @@ Entity &Scene::create_entity() {
 
     entities.emplace_back();
 
+    entities.back().scene = this;
+
     return entities.back();
+
+}
+
+void Scene::update() {
+
+    for (auto &entity : entities) {
+        entity.update();
+    }
 
 }
 

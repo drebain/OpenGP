@@ -21,6 +21,8 @@ private:
 
     bool running = false;
 
+    std::function<void()> update_callback = [](){};
+
 public:
 
     HEADERONLY_INLINE Application();
@@ -28,6 +30,8 @@ public:
     HEADERONLY_INLINE int run();
 
     HEADERONLY_INLINE Window &create_window();
+
+    HEADERONLY_INLINE void set_update_callback(std::function<void()> fn);
 
 };
 

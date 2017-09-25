@@ -7,6 +7,8 @@
 #include <OpenGP/GL/Component.h>
 #include <OpenGP/GL/Components/TransformComponent.h>
 #include <OpenGP/GL/Renderer.h>
+#include <OpenGP/GL/Window.h>
+#include <OpenGP/MLogger.h>
 
 
 //=============================================================================
@@ -19,11 +21,17 @@ private:
 
 public:
 
-    CameraComponent() {
-    }
+    CameraComponent() {}
 
     void init() {
         get_entity().require<TransformComponent>();
+    }
+
+    void draw_frame(Window &window) {
+
+        for (auto &renderable : get_scene().all_of_type<RenderComponent>()) {
+
+        }
     }
 
 };
