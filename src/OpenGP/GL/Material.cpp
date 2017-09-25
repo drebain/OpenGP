@@ -14,7 +14,11 @@ namespace {
     const static char *default_code = R"GLSL(
 
         vec4 shade() {
-            return vec4(1, 0, 0, 1);
+            vec3 base_color = 0.6 * vec3(1,1,1);
+            float diffuse = clamp(dot(get_normal(), vec3(1,0,0)), 0, 1);
+            vec3 ambient = vec3(0.1,0.11,0.13);
+
+            return vec4(diffuse * base_color + ambient, 1);
         }
 
     )GLSL";

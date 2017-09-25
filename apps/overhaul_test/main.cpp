@@ -12,14 +12,14 @@
 
 using namespace OpenGP;
 int main(int argc, char** argv){
-    /*std::string file = (argc==2) ? argv[1] : "bunny.obj";
+    std::string file = (argc==2) ? argv[1] : "bunny.obj";
 
     SurfaceMesh mesh;
     bool success = mesh.read(file);
     if(!success) mFatal() << "File not found";
     mesh.triangulate();
     mesh.update_face_normals();
-    mesh.update_vertex_normals();*/
+    mesh.update_vertex_normals();
 
     Application app;
     auto &window = app.create_window();
@@ -31,6 +31,9 @@ int main(int argc, char** argv){
     app.set_update_callback([&](){scene.update();});
 
     auto &bunny = scene.create_entity_with<RenderComponent>();
+    auto &renderer = bunny.set_renderer<SurfaceMeshRenderer>();
+    renderer.upload_mesh(mesh);
+
     auto &cam = scene.create_entity_with<CameraComponent>();
 
     window.set_display_callback([&](Window &window){cam.draw_frame(window);});

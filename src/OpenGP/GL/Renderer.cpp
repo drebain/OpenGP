@@ -85,6 +85,8 @@ namespace {
 
     const static char *fshader_preamble = R"GLSL(
 
+        out vec4 _out_color;
+
         vec3 _fragment_position = vec3(0, 0, 0);
         void set_position(vec3 position) { _fragment_position = position; }
         vec3 get_position() { return _fragment_position; }
@@ -103,6 +105,7 @@ namespace {
 
         void main() {
             fragment();
+            _out_color = shade();
         }
 
     )GLSL";
@@ -138,20 +141,20 @@ void Renderer::build_shader(Shader &shader, const Material &material, const std:
 
 void Renderer::update_shader(Shader &shader, const RenderContext &context) {
 
-    shader.set_uniform("_uniform_aspect", context.aspect());
-    shader.set_uniform("_uniform_vfov", context.vfov());
-    shader.set_uniform("_uniform_near", context.near());
-    shader.set_uniform("_uniform_far", context.far());
-    shader.set_uniform("_uniform_eye", context.eye());
-    shader.set_uniform("_uniform_forward", context.forward());
-    shader.set_uniform("_uniform_up", context.up());
-    shader.set_uniform("_uniform_M", context.M());
-    shader.set_uniform("_uniform_V", context.V());
-    shader.set_uniform("_uniform_P", context.P());
-    shader.set_uniform("_uniform_MV", context.MV());
-    shader.set_uniform("_uniform_VP", context.VP());
-    shader.set_uniform("_uniform_MVP", context.MVP());
-    shader.set_uniform("_uniform_wireframe", context.wireframe());
+    shader.set_uniform("_uniform_aspect", context.aspect);
+    shader.set_uniform("_uniform_vfov", context.vfov);
+    shader.set_uniform("_uniform_near", context.near);
+    shader.set_uniform("_uniform_far", context.far);
+    shader.set_uniform("_uniform_eye", context.eye);
+    shader.set_uniform("_uniform_forward", context.forward);
+    shader.set_uniform("_uniform_up", context.up);
+    shader.set_uniform("_uniform_M", context.M);
+    shader.set_uniform("_uniform_V", context.V);
+    shader.set_uniform("_uniform_P", context.P);
+    shader.set_uniform("_uniform_MV", context.MV);
+    shader.set_uniform("_uniform_VP", context.VP);
+    shader.set_uniform("_uniform_MVP", context.MVP);
+    shader.set_uniform("_uniform_wireframe", context.wireframe);
 
 }
 

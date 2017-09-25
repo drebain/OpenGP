@@ -17,6 +17,20 @@ private:
 
     std::unique_ptr<Renderer> renderer;
 
+public:
+
+    template <typename T, typename ...Args>
+    T &set_renderer(Args ...args) {
+        T *t = new T(args...);
+        renderer = std::unique_ptr<Renderer>(t);
+        return *t;
+    }
+
+    Renderer &get_renderer() {
+        assert(renderer);
+        return *renderer;
+    }
+
 };
 
 //=============================================================================

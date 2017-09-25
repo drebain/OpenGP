@@ -8,6 +8,7 @@
 
 #include <OpenGP/headeronly.h>
 #include <OpenGP/types.h>
+#include <OpenGP/GL/Eigen.h>
 #include <OpenGP/GL/Shader.h>
 #include <OpenGP/GL/Material.h>
 
@@ -15,29 +16,74 @@
 namespace OpenGP {
 //=============================================================================
 
-class RenderContext {
-public:
+struct RenderContext {
 
-    virtual ~RenderContext() {}
+    // Camera parameters
 
-    virtual float aspect() const = 0;
-    virtual float vfov() const = 0;
+    float aspect;
+    float vfov;       // Only relevant for prespective
+    float view_width; // only relevant for orthographic
 
-    virtual float near() const = 0;
-    virtual float far() const = 0;
+    float near;
+    float far;
 
-    virtual Vec3 eye() const = 0;
-    virtual Vec3 forward() const = 0;
-    virtual Vec3 up() const = 0;
+    Vec3 eye;
+    Vec3 forward;
+    Vec3 up;
 
-    virtual Mat4x4 M() const = 0;
-    virtual Mat4x4 V() const = 0;
-    virtual Mat4x4 P() const = 0;
-    virtual Mat4x4 MV() const { return V() * M(); }
-    virtual Mat4x4 VP() const { return P() * V(); }
-    virtual Mat4x4 MVP() const { return P() * V() * M(); }
+    bool ortho = false;
 
-    virtual bool wireframe() const { return false; }
+    // Object parameters
+
+    Vec3 translation;
+    Vec3 scale;
+    Quaternion rotation;
+
+    // Render parameters
+
+    bool wireframe = false;
+
+    // Matrices
+
+    Mat4x4 M;
+    Mat4x4 V;
+    Mat4x4 P;
+    Mat4x4 MV;
+    Mat4x4 VP;
+    Mat4x4 MVP;
+
+    void update_model() {
+        auto T = translate(translation.x(),translation.y(),translation.z());
+        Mat4x4 R = Mat4x4::Identity();
+        R.block<3, 3>(0,0) = rotation.matrix();
+        R(3, 3) = 1;
+        auto S = OpenGP::scale(scale.x(),scale.y(),scale.z());
+        M = T * R * S;
+
+        MV = V * M;
+        MVP = P * V * M;
+    }
+
+    void update_view() {
+
+        V = look_at(eye, Vec3(eye + forward), up);
+
+        MV = V * M;
+        VP = P * V;
+        MVP = P * V * M;
+    }
+
+    void update_projection() {
+
+        if (ortho) {
+            P = OpenGP::ortho(-view_width/2, view_width/2, -view_width/(2*aspect), view_width/(2*aspect), near, far);
+        } else {
+            P = perspective(vfov, aspect, near, far);
+        }
+
+        VP = P * V;
+        MVP = P * V * M;
+    }
 
 };
 

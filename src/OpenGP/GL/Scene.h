@@ -7,6 +7,7 @@
 #include <list>
 
 #include <OpenGP/headeronly.h>
+#include <OpenGP/util/GenericIterable.h>
 #include <OpenGP/GL/Entity.h>
 
 
@@ -32,10 +33,20 @@ public:
         return t;
     }
 
-    //template <typename T>
-    //SimpleIterable<T> all_of_type() {
-    //
-    //}
+    template <typename T>
+    GenericIterable<T> all_of_type() {
+
+        auto filter_pred = [](Entity &e){
+            return e.has<T>();
+        };
+
+        auto map_pred = [](Entity &e){
+            return &(e.get<T>());
+        };
+
+        return GenericIterable<Entity>::adaptor(entities).filter(filter_pred).map(map_pred);
+
+    }
 
     HEADERONLY_INLINE void update();
 

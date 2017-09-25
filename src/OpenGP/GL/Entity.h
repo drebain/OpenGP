@@ -49,6 +49,7 @@ public:
         components[std::type_index(typeid(T))] = std::unique_ptr<Component>(component);
 
         component->entity = this;
+        component->scene = scene;
         component->init();
 
         return *component;
