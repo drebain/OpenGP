@@ -5,6 +5,7 @@
 #pragma once
 
 #include <OpenGP/GL/Entity.h>
+#include <OpenGP/GL/Components/RenderComponent.h>
 #include <OpenGP/GL/Components/TransformComponent.h>
 #include <OpenGP/GL/Renderer.h>
 #include <OpenGP/GL/Window.h>
