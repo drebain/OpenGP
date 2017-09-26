@@ -1,7 +1,7 @@
-find_package(PNG REQUIRED)
+find_package(PNG)
 
 if(NOT PNG_FOUND)
-    
+
     message(WARNING "libpng not found")
 
 else(NOT PNG_FOUND)
