@@ -6,18 +6,23 @@
 
 #include <OpenGP/GL/Entity.h>
 #include <OpenGP/GL/Renderer.h>
+#include <OpenGP/GL/Components/TransformComponent.h>
 
 
 //=============================================================================
 namespace OpenGP {
 //=============================================================================
 
-class RenderComponent : public Component {
+class WorldRenderComponent : public Component {
 private:
 
     std::unique_ptr<Renderer> renderer;
 
 public:
+
+    void init() {
+        require<TransformComponent>();
+    }
 
     template <typename T, typename ...Args>
     T &set_renderer(Args ...args) {

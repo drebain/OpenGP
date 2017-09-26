@@ -5,7 +5,7 @@
 #pragma once
 
 #include <OpenGP/GL/Entity.h>
-#include <OpenGP/GL/Components/RenderComponent.h>
+#include <OpenGP/GL/Components/WorldRenderComponent.h>
 #include <OpenGP/GL/Components/TransformComponent.h>
 #include <OpenGP/GL/Renderer.h>
 #include <OpenGP/GL/Window.h>
@@ -64,7 +64,7 @@ public:
             context.update_view();
             context.update_projection();
 
-            for (auto &renderable : get_scene().all_of_type<RenderComponent>()) {
+            for (auto &renderable : get_scene().all_of_type<WorldRenderComponent>()) {
 
                 context.translation = Vec3(0,0,0);
                 context.scale = Vec3(1,1,1);

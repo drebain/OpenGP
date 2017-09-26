@@ -5,7 +5,7 @@
 ///--- Mesh rendering
 #include <OpenGP/GL/Application.h>
 #include <OpenGP/GL/Scene.h>
-#include <OpenGP/GL/Components/RenderComponent.h>
+#include <OpenGP/GL/Components/WorldRenderComponent.h>
 #include <OpenGP/GL/Components/CameraComponent.h>
 #include <OpenGP/SurfaceMesh/SurfaceMesh.h>
 #include <OpenGP/SurfaceMesh/GL/SurfaceMeshRenderer.h>
@@ -30,7 +30,7 @@ int main(int argc, char** argv){
 
     app.set_update_callback([&](){scene.update();});
 
-    auto &bunny = scene.create_entity_with<RenderComponent>();
+    auto &bunny = scene.create_entity_with<WorldRenderComponent>();
     auto &renderer = bunny.set_renderer<SurfaceMeshRenderer>();
     renderer.upload_mesh(mesh);
 
