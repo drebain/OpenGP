@@ -26,9 +26,10 @@ public:
         return *t;
     }
 
-    Renderer &get_renderer() {
+    template <typename T = Renderer>
+    T &get_renderer() {
         assert(renderer);
-        return *renderer;
+        return *dynamic_cast<T*>(renderer.get());
     }
 
 };
