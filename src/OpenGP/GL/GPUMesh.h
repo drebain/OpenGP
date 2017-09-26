@@ -52,6 +52,17 @@ public:
         auto vnormals = mesh.get_vertex_property<Vec3>("v:normal");
         if (vnormals) {
             vnormal.upload_raw(vnormals.data(), mesh.n_vertices());
+        } else {
+            void *uninitialized_data = malloc(mesh.n_vertices() * sizeof(Vec3));
+            vnormal.upload_raw(uninitialized_data, mesh.n_vertices());
+            free(uninitialized_data);
+        }
+
+        // TODO: read texture coordinates
+        {
+            void *uninitialized_data = malloc(mesh.n_vertices() * sizeof(Vec2));
+            vtexcoord.upload_raw(uninitialized_data, mesh.n_vertices());
+            free(uninitialized_data);
         }
 
         element_count = 0;
