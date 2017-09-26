@@ -99,10 +99,10 @@ public:
 
     virtual ~ImageWriter() {}
 
-    int set_components(int components) { this->components = components; }
-    int set_bit_depth(int bit_depth) { this->bit_depth = bit_depth; }
-    int set_width(int width) { this->width = width; }
-    int set_height(int height) { this->height = height; }
+    void set_components(int components) { this->components = components; }
+    void set_bit_depth(int bit_depth) { this->bit_depth = bit_depth; }
+    void set_width(int width) { this->width = width; }
+    void set_height(int height) { this->height = height; }
 
     virtual void write(const WriteFunction&) = 0;
 
