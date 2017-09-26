@@ -156,6 +156,32 @@ bool OpenGP::Shader::add_fshader_from_source(const char* code) {
     return Success;
 }
 
+bool OpenGP::Shader::add_shader_from_source(const char* code, GLenum type) {
+    if (verbose) mDebug() << "Compiling shader";
+
+    /// Create the Shader
+    GLuint ShaderID = glCreateShader(type);
+
+    /// Compile Shader
+    glShaderSource(ShaderID, 1, &code, NULL);
+    glCompileShader(ShaderID);
+
+    /// Check Shader
+    GLint Success = GL_FALSE;
+    glGetShaderiv(ShaderID, GL_COMPILE_STATUS, &Success);
+    if (!Success) {
+        int InfoLogLength;
+        glGetShaderiv(ShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+        std::vector<char> ShaderErrorMessage(InfoLogLength);
+        glGetShaderInfoLog(ShaderID, InfoLogLength, NULL, &ShaderErrorMessage[0]);
+        mDebug() << std::string(&ShaderErrorMessage[0]);
+    } else {
+        glAttachShader(pid, ShaderID);
+    }
+
+    return Success;
+}
+
 bool OpenGP::Shader::link() {
     if (verbose) mDebug() << "Linking shader program";
     glLinkProgram(pid);

@@ -71,6 +71,7 @@ public:
 public:
     HEADERONLY_INLINE bool add_vshader_from_source(const char* code);
     HEADERONLY_INLINE bool add_fshader_from_source(const char* code);
+    HEADERONLY_INLINE bool add_shader_from_source(const char* code, GLenum type);
     HEADERONLY_INLINE bool link();
 /// @}
 
