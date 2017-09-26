@@ -5,7 +5,7 @@
 #pragma once
 
 #include <OpenGP/types.h>
-#include <OpenGP/GL/Component.h>
+#include <OpenGP/GL/Entity.h>
 
 
 //=============================================================================
@@ -13,15 +13,23 @@ namespace OpenGP {
 //=============================================================================
 
 class TransformComponent : public Component {
-private:
+public:
 
-    Vec3 translation;
+    Vec3 position;
     Vec3 scale;
     Quaternion rotation;
 
-public:
+    Vec3 right() const {
+        return rotation * Vec3(1, 0, 0);
+    }
 
-    TransformComponent() {}
+    Vec3 up() const {
+        return rotation * Vec3(0, 1, 0);
+    }
+
+    Vec3 forward() const {
+        return rotation * Vec3(0, 0, 1);
+    }
 
 };
 

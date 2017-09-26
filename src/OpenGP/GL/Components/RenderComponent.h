@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <OpenGP/GL/Component.h>
+#include <OpenGP/GL/Entity.h>
 #include <OpenGP/GL/Renderer.h>
 
 

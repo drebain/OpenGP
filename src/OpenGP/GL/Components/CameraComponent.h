@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <OpenGP/GL/Component.h>
+#include <OpenGP/GL/Entity.h>
 #include <OpenGP/GL/Components/TransformComponent.h>
 #include <OpenGP/GL/Renderer.h>
 #include <OpenGP/GL/Window.h>
@@ -18,47 +18,67 @@ namespace OpenGP {
 class CameraComponent : public Component {
 private:
 
+    Window *window = nullptr;
 
 public:
+
+    float near_plane = 0.1f;
+    float far_plane = 1000;
+    float vfov = 60;
 
     CameraComponent() {}
 
     void init() {
-        get_entity().require<TransformComponent>();
+        require<TransformComponent>();
     }
 
-    void draw_frame(Window &window) {
+    bool has_window() {
+        return window != nullptr;
+    }
 
-        RenderContext context;
+    void set_window(Window &window) {
 
-        int width, height;
-        std::tie(width, height) = window.get_size();
+        this->window = &window;
 
-        glViewport(0, 0, width, height);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
+        window.set_display_callback([this] (Window &window) {
 
-        context.aspect = (float)width / (float)height;
-        context.vfov = 80;
-        context.near = 0.1;
-        context.far = 100;
-        context.eye = Vec3(0,0,-1);
-        context.forward = Vec3(0,0,1);
-        context.up = Vec3(0,1,0);
+            RenderContext context;
 
-        context.update_view();
-        context.update_projection();
+            int width, height;
+            std::tie(width, height) = window.get_size();
 
-        for (auto &renderable : get_scene().all_of_type<RenderComponent>()) {
+            glViewport(0, 0, width, height);
+            glClearColor(1, 1, 1, 1);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glEnable(GL_DEPTH_TEST);
 
-            context.translation = Vec3(0,0,0);
-            context.scale = Vec3(1,1,1);
-            context.rotation = Quaternion::Identity();
+            context.aspect = (float)width / (float)height;
+            context.vfov = vfov;
+            context.near = near_plane;
+            context.far = far_plane;
+            context.eye = get<TransformComponent>().position;
+            context.forward = get<TransformComponent>().forward();
+            context.up = get<TransformComponent>().up();
 
-            context.update_model();
+            context.update_view();
+            context.update_projection();
 
-            renderable.get_renderer().render(context);
-        }
+            for (auto &renderable : get_scene().all_of_type<RenderComponent>()) {
+
+                context.translation = Vec3(0,0,0);
+                context.scale = Vec3(1,1,1);
+                context.rotation = Quaternion::Identity();
+
+                context.update_model();
+
+                renderable.get_renderer().render(context);
+            }
+
+        });
+    }
+
+    Window &get_window() {
+        return *window;
     }
 
 };

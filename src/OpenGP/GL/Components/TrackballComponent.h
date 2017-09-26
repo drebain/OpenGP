@@ -4,40 +4,34 @@
 
 #pragma once
 
-#include <cassert>
+#include <OpenGP/GL/Entity.h>
+#include <OpenGP/GL/Components/CameraComponent.h>
 
 
 //=============================================================================
 namespace OpenGP {
 //=============================================================================
 
-class Scene;
-class Entity;
-
-class Component {
-
-    friend class Entity;
-
+class TrackballComponent : public Component {
 private:
 
-    Entity *entity = nullptr;
-    Scene *scene = nullptr;
-
-protected:
-
-    Component() {}
 
 public:
 
-    Component(const Component&) = delete;
-    Component &operator=(const Component&) = delete;
+    Vec3 center;
+    float distance = 1;
+    float sensitivity = 1;
+    float scroll_sensitivity = 1;
 
-    virtual void init() {}
+    void init() {
+        require<CameraComponent>();
 
-    virtual void update() {}
+        center = get<TransformComponent>().position + get<TransformComponent>().forward();
+    }
 
-    Entity &get_entity() { assert(entity != nullptr); return *entity; }
-    Scene &get_scene() { assert(scene != nullptr); return *scene; }
+    void update() {
+
+    }
 
 };
 

@@ -35,8 +35,9 @@ int main(int argc, char** argv){
     renderer.upload_mesh(mesh);
 
     auto &cam = scene.create_entity_with<CameraComponent>();
+    cam.get<TransformComponent>().position = Vec3(4, 4, -10);
 
-    window.set_display_callback([&](Window &window){cam.draw_frame(window);});
+    cam.set_window(window);
 
     return app.run();
 }

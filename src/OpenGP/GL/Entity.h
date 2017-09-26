@@ -10,7 +10,6 @@
 #include <cassert>
 
 #include <OpenGP/headeronly.h>
-#include <OpenGP/GL/Component.h>
 
 
 //=============================================================================
@@ -18,6 +17,43 @@ namespace OpenGP {
 //=============================================================================
 
 class Scene;
+class Entity;
+
+class Component {
+
+    friend class Entity;
+
+private:
+
+    Entity *entity = nullptr;
+    Scene *scene = nullptr;
+
+protected:
+
+    Component() {}
+
+public:
+
+    Component(const Component&) = delete;
+    Component &operator=(const Component&) = delete;
+
+    virtual void init() {}
+
+    virtual void update() {}
+
+    Entity &get_entity() { assert(entity != nullptr); return *entity; }
+    Scene &get_scene() { assert(scene != nullptr); return *scene; }
+
+    template <typename T>
+    T &require();
+
+    template <typename T>
+    bool has();
+
+    template <typename T>
+    T &get();
+
+};
 
 class Entity {
 
@@ -68,6 +104,15 @@ public:
     HEADERONLY_INLINE Scene &get_scene();
 
 };
+
+template <typename T>
+T &Component::require() { return get_entity().require<T>(); }
+
+template <typename T>
+bool Component::has() { return get_entity().has<T>(); }
+
+template <typename T>
+T &Component::get() { return get_entity().get<T>(); }
 
 //=============================================================================
 } // OpenGP::

@@ -15,7 +15,7 @@ namespace {
 
         vec4 shade() {
             vec3 base_color = 0.6 * vec3(1,1,1);
-            float diffuse = clamp(dot(get_normal(), vec3(1,0,0)), 0, 1);
+            float diffuse = clamp(abs(dot(get_normal(), normalize(vec3(1,1,1)))), 0, 1);
             vec3 ambient = vec3(0.1,0.11,0.13);
 
             return vec4(diffuse * base_color + ambient, 1);
