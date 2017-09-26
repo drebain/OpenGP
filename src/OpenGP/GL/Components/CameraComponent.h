@@ -66,9 +66,11 @@ public:
 
             for (auto &renderable : get_scene().all_of_type<WorldRenderComponent>()) {
 
-                context.translation = Vec3(0,0,0);
-                context.scale = Vec3(1,1,1);
-                context.rotation = Quaternion::Identity();
+                auto &transform = renderable.get<TransformComponent>();
+
+                context.translation = transform.position;
+                context.scale = transform.scale;
+                context.rotation = transform.rotation;
 
                 context.update_model();
 

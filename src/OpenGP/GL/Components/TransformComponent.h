@@ -15,9 +15,9 @@ namespace OpenGP {
 class TransformComponent : public Component {
 public:
 
-    Vec3 position;
-    Vec3 scale;
-    Quaternion rotation;
+    Vec3 position = Vec3::Zero();
+    Vec3 scale = Vec3::Ones();
+    Quaternion rotation = Quaternion::Identity();
 
     Vec3 right() const {
         return rotation * Vec3(1, 0, 0);
