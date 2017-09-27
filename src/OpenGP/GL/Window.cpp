@@ -15,13 +15,13 @@ namespace OpenGP {
 
 namespace {
 
-    Window &wrapper(GLFWwindow *handle) {
+    inline Window &wrapper(GLFWwindow *handle) {
         return *static_cast<Window*>(glfwGetWindowUserPointer(handle));
     }
 
     /// Callbacks
 
-    void close_callback(GLFWwindow *handle) {
+    inline void close_callback(GLFWwindow *handle) {
         wrapper(handle).close();
     }
 

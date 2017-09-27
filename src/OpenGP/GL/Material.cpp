@@ -11,21 +11,23 @@ namespace OpenGP {
 
 namespace {
 
-    const static char *default_code = R"GLSL(
+    inline const char *default_code() {
+        return R"GLSL(
 
-        vec4 shade() {
-            vec3 base_color = 0.6 * vec3(1,1,1);
-            float diffuse = clamp(abs(dot(get_normal(), normalize(vec3(1,1,1)))), 0, 1);
-            vec3 ambient = vec3(0.1,0.11,0.13);
+            vec4 shade() {
+                vec3 base_color = 0.6 * vec3(1,1,1);
+                float diffuse = clamp(abs(dot(get_normal(), normalize(vec3(1,1,1)))), 0, 1);
+                vec3 ambient = vec3(0.1,0.11,0.13);
 
-            return vec4(diffuse * base_color + ambient, 1);
-        }
+                return vec4(diffuse * base_color + ambient, 1);
+            }
 
-    )GLSL";
+        )GLSL";
+    }
 
 }
 
-Material::Material() : Material(default_code) {}
+Material::Material() : Material(default_code()) {}
 
 Material::Material(const std::string &code) {
     shading_code = code;
