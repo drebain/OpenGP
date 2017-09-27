@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "Renderer.h"
+#include "MaterialRenderer.h"
 
 
 //=============================================================================
@@ -122,11 +122,11 @@ namespace {
 
 }
 
-void Renderer::set_material(const Material &material) {
+void MaterialRenderer::set_material(const Material &material) {
     this->material = material;
 }
 
-void Renderer::build_shader(Shader &shader, const Material &material, const std::string &vshader, const std::string &fshader) {
+void MaterialRenderer::build_shader(Shader &shader, const Material &material, const std::string &vshader, const std::string &fshader) {
 
     shader.clear();
 
@@ -149,7 +149,7 @@ void Renderer::build_shader(Shader &shader, const Material &material, const std:
 
 }
 
-void Renderer::update_shader(Shader &shader, const RenderContext &context) {
+void MaterialRenderer::update_shader(Shader &shader, const RenderContext &context) {
 
     shader.set_uniform("_uniform_aspect", context.aspect);
     shader.set_uniform("_uniform_vfov", context.vfov);

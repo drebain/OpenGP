@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenGP/GL/Renderer.h>
+#include <OpenGP/GL/MaterialRenderer.h>
 #include <OpenGP/GL/GPUMesh.h>
 #include <OpenGP/SurfaceMesh/SurfaceMesh.h>
 
@@ -9,7 +9,7 @@
 namespace OpenGP {
 //=============================================================================
 
-class SurfaceMeshRenderer : public Renderer {
+class SurfaceMeshRenderer : public MaterialRenderer {
 private:
 
     GPUMesh gpu_mesh;

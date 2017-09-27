@@ -87,16 +87,16 @@ struct RenderContext {
 
 };
 
-class Renderer {
+class MaterialRenderer {
 protected:
 
     Material material;
 
 public:
 
-    Renderer() {}
+    MaterialRenderer() {}
 
-    virtual ~Renderer() {}
+    virtual ~MaterialRenderer() {}
 
     virtual void render(const RenderContext&) = 0;
 
@@ -115,5 +115,5 @@ public:
 //=============================================================================
 
 #ifdef HEADERONLY
-    #include "Renderer.cpp"
+    #include "MaterialRenderer.cpp"
 #endif
