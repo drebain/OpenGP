@@ -5,6 +5,8 @@
 #include <OpenGP/GL/Application.h>
 #include <OpenGP/GL/ImguiRenderer.h>
 
+#define OPENGP_IMPLEMENT_ALL_IN_THIS_FILE
+#include <OpenGP/util/implementations.h>
 
 using namespace OpenGP;
 int main(int argc, char** argv){

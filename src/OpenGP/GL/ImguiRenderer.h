@@ -49,7 +49,7 @@ private:
         out vec4 color_out;
 
         void main() {
-            color_out = fcolor * texture2D(tex, ftexcoord);
+            color_out = fcolor * texture(tex, ftexcoord);
         }
     )GLSL";
 

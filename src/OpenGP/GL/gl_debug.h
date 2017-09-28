@@ -92,7 +92,7 @@ namespace GLDebug {
         glGetIntegerv(GL_MAJOR_VERSION, &version_major);
         glGetIntegerv(GL_MINOR_VERSION, &version_minor);
 
-        //if (version_minor >= 4 && version_minor >= 3) {
+        if (version_minor >= 4 && version_minor >= 3) {
 
             glEnable(GL_DEBUG_OUTPUT);
             glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
@@ -101,7 +101,7 @@ namespace GLDebug {
 
             glDebugMessageCallback((GLDEBUGPROC)gl_debug_handler, nullptr);
 
-        //}
+        }
 
     }
 

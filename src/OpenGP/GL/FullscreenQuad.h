@@ -38,7 +38,7 @@ private:
         out vec4 fcolor;
 
         void main(){
-            vec4 full_color = texture2D(tex, uv);
+            vec4 full_color = texture(tex, uv);
             float red = full_color.r;
             fcolor = (1 - grayscale) * full_color + grayscale * vec4(red, red, red, 1);
         }

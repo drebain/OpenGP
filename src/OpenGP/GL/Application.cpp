@@ -16,14 +16,14 @@ namespace OpenGP {
 
 namespace {
 
-    inline Application &wrapper(GLFWwindow *handle) {
+    inline Application &application_wrapper(GLFWwindow *handle) {
         return *static_cast<Application*>(glfwGetWindowUserPointer(handle));
     }
 
     /// Callbacks
 
-    inline void close_callback(GLFWwindow *handle) {
-        wrapper(handle).close();
+    inline void application_close_callback(GLFWwindow *handle) {
+        application_wrapper(handle).close();
     }
 
 }
@@ -55,6 +55,8 @@ Application::WindowContainer::WindowContainer(Application &app, std::function<vo
         user_display_callback(window);
 
         framebuffer.unbind();
+        
+        glFlush();
 
         glfwMakeContextCurrent(old_context);
         glClear(GL_DEPTH_BUFFER_BIT);
@@ -95,8 +97,8 @@ Application::Application(const char *name) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+    glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
@@ -105,7 +107,7 @@ Application::Application(const char *name) {
     if( !(hidden_window = glfwCreateWindow(800, 600, name, nullptr, nullptr)) )
         mFatal() << "Failed to open OpenGL 3 GLFW window.";
 
-    glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
+    glfwWindowHint(GLFW_VISIBLE, GL_TRUE);
 
     glfwMakeContextCurrent(hidden_window);
     if(glfwGetCurrentContext() != hidden_window)
@@ -120,7 +122,7 @@ Application::Application(const char *name) {
     GLDebug::enable();
 
     glfwSetWindowUserPointer(hidden_window, this);
-    glfwSetWindowCloseCallback(hidden_window, &close_callback);
+    glfwSetWindowCloseCallback(hidden_window, &application_close_callback);
 
     /// Wipe Startup Errors (TODO: check who causes them? GLEW?)
     while (glGetError() != GL_NO_ERROR) {}
