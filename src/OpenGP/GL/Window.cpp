@@ -5,6 +5,7 @@
 #include <cassert>
 
 #include <OpenGP/MLogger.h>
+#include <OpenGP/GL/gl_debug.h>
 
 #include "Window.h"
 
@@ -27,7 +28,9 @@ namespace {
 
 }
 
-Window::Window() {
+Window::Window(std::function<void(Window&)> display_callback) : Window(display_callback, nullptr) {}
+
+Window::Window(std::function<void(Window&)> display_callback, GLFWwindow *parent_context) {
 
     // note: can be called multiple times without problems
     // docs: "additional calls to glfwInit() after successful initialization but before
@@ -42,15 +45,18 @@ Window::Window() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+    glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 
     /// Attempt to open the window: fails if required version unavailable
     /// @note Intel GPUs do not support OpenGL 3.0
-    if( !(handle = glfwCreateWindow(800, 600, "New Window", nullptr, nullptr)) )
+    if( !(handle = glfwCreateWindow(800, 600, "New Window", nullptr, parent_context)) )
         mFatal() << "Failed to open OpenGL 3 GLFW window.";
 
+    /// NOTE: this window's context must be current when this function returns
     glfwMakeContextCurrent(handle);
     if(glfwGetCurrentContext() != handle)
         mFatal() << "Failed to make GLFW context current.";
@@ -62,11 +68,15 @@ Window::Window() {
     if( err != GLEW_OK )
         mFatal() << "Failed GLEW initialization";
 
+    GLDebug::enable();
+
     glfwSetWindowUserPointer(handle, this);
     glfwSetWindowCloseCallback(handle, &close_callback);
 
     /// Wipe Startup Errors (TODO: check who causes them? GLEW?)
     while (glGetError() != GL_NO_ERROR) {}
+
+    this->display_callback = display_callback;
 
 }
 
@@ -108,10 +118,6 @@ std::tuple<int, int, int> Window::get_GL_version() {
     return std::tuple<int, int, int>(major, minor, revision);
 }
 
-void Window::set_display_callback(std::function<void(Window&)> fn) {
-    display_callback = fn;
-}
-
 void Window::draw() {
 
     glfwMakeContextCurrent(handle);
@@ -119,6 +125,12 @@ void Window::draw() {
     display_callback(*this);
 
     glfwSwapBuffers(handle);
+
+}
+
+void Window::poll() {
+
+    glfwPollEvents();
 
 }
 

@@ -27,7 +27,8 @@ private:
 
 public:
 
-    HEADERONLY_INLINE Window();
+    HEADERONLY_INLINE Window(std::function<void(Window&)> display_callback);
+    HEADERONLY_INLINE Window(std::function<void(Window&)> display_callback, GLFWwindow *parent_context);
 
     Window(const Window&) = delete;
     Window &operator=(const Window&) = delete;
@@ -43,9 +44,9 @@ public:
 
     HEADERONLY_INLINE std::tuple<int, int, int> get_GL_version();
 
-    HEADERONLY_INLINE void set_display_callback(std::function<void(Window&)> fn);
-
     HEADERONLY_INLINE void draw();
+
+    HEADERONLY_INLINE void poll();
 
     HEADERONLY_INLINE bool should_close() const;
 
