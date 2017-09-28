@@ -9,6 +9,11 @@
 #include <OpenGP/GL/Components/CameraComponent.h>
 #include <OpenGP/SurfaceMesh/SurfaceMesh.h>
 #include <OpenGP/SurfaceMesh/GL/SurfaceMeshRenderer.h>
+#include <OpenGP/GL/ImguiRenderer.h>
+
+#define OPENGP_IMPLEMENT_ALL_IN_THIS_FILE
+#include <OpenGP/util/implementations.h>
+
 
 using namespace OpenGP;
 int main(int argc, char** argv){
@@ -22,9 +27,8 @@ int main(int argc, char** argv){
     mesh.update_vertex_normals();
 
     Application app;
-    auto &window = app.create_window();
 
-    window.set_title("Test Window");
+    ImguiRenderer imrenderer;
 
     Scene scene;
 
@@ -35,9 +39,32 @@ int main(int argc, char** argv){
     renderer.upload_mesh(mesh);
 
     auto &cam = scene.create_entity_with<CameraComponent>();
-    cam.get<TransformComponent>().position = Vec3(4, 4, -10);
+    cam.get<TransformComponent>().position = Vec3(3, 3, -10);
 
-    cam.set_window(window);
+    auto &window = app.create_window([&](Window &window){
+
+        cam.draw_to_window(window);
+
+        int width, height;
+        std::tie(width, height) = window.get_size();
+
+        imrenderer.begin_frame(width, height);
+
+        ImGui::BeginMainMenuBar();
+        ImGui::MenuItem("File");
+        ImGui::MenuItem("Edit");
+        ImGui::MenuItem("View");
+        ImGui::MenuItem("Help");
+        ImGui::EndMainMenuBar();
+
+        ImGui::Begin("Test Window 1");
+        ImGui::Text("This is a test imgui window");
+        ImGui::End();
+
+        imrenderer.end_frame();
+
+    });
+    window.set_title("Test Window");
 
     return app.run();
 }

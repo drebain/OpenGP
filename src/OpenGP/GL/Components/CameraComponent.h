@@ -37,47 +37,42 @@ public:
         return window != nullptr;
     }
 
-    void set_window(Window &window) {
+    void draw_to_window(Window &window) {
 
-        this->window = &window;
+        RenderContext context;
 
-        window.set_display_callback([this] (Window &window) {
+        int width, height;
+        std::tie(width, height) = window.get_size();
 
-            RenderContext context;
+        glViewport(0, 0, width, height);
+        glClearColor(0.15f, 0.15f, 0.15f, 1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
 
-            int width, height;
-            std::tie(width, height) = window.get_size();
+        context.aspect = (float)width / (float)height;
+        context.vfov = vfov;
+        context.near = near_plane;
+        context.far = far_plane;
+        context.eye = get<TransformComponent>().position;
+        context.forward = get<TransformComponent>().forward();
+        context.up = get<TransformComponent>().up();
 
-            glViewport(0, 0, width, height);
-            glClearColor(1, 1, 1, 1);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glEnable(GL_DEPTH_TEST);
+        context.update_view();
+        context.update_projection();
 
-            context.aspect = (float)width / (float)height;
-            context.vfov = vfov;
-            context.near = near_plane;
-            context.far = far_plane;
-            context.eye = get<TransformComponent>().position;
-            context.forward = get<TransformComponent>().forward();
-            context.up = get<TransformComponent>().up();
+        for (auto &renderable : get_scene().all_of_type<WorldRenderComponent>()) {
 
-            context.update_view();
-            context.update_projection();
+            auto &transform = renderable.get<TransformComponent>();
 
-            for (auto &renderable : get_scene().all_of_type<WorldRenderComponent>()) {
+            context.translation = transform.position;
+            context.scale = transform.scale;
+            context.rotation = transform.rotation;
 
-                auto &transform = renderable.get<TransformComponent>();
+            context.update_model();
 
-                context.translation = transform.position;
-                context.scale = transform.scale;
-                context.rotation = transform.rotation;
+            renderable.get_renderer().render(context);
+        }
 
-                context.update_model();
-
-                renderable.get_renderer().render(context);
-            }
-
-        });
     }
 
     Window &get_window() {
