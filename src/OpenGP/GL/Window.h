@@ -9,6 +9,7 @@
 #include <functional>
 
 #include <OpenGP/headeronly.h>
+#include <OpenGP/GL/EventProvider.h>
 #include <OpenGP/GL/glfw.h>
 
 
@@ -16,7 +17,27 @@
 namespace OpenGP {
 //=============================================================================
 
-class Window {
+typedef int KeyCode;
+
+struct KeyEvent {
+    KeyCode key;
+    bool released;
+};
+
+struct MouseMoveEvent {
+    Vec2 delta, position;
+};
+
+struct MouseButtonEvent {
+    int button;
+    bool released;
+};
+
+struct MouseScrollEvent {
+    Vec2 delta;
+};
+
+class Window : public EventProvider {
 private:
 
     GLFWwindow* handle = nullptr;

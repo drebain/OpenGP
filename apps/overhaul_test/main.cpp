@@ -64,6 +64,11 @@ int main(int argc, char** argv){
         imrenderer.end_frame();
 
     });
+
+    window.add_listener<int>([](const int &i){
+        mLogger() << i;
+    });
+
     window.set_title("Test Window");
 
     return app.run();
