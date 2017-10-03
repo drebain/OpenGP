@@ -236,24 +236,28 @@ public:
         fprops.reserve(nf);
     }
 
-    void add_vertex(Point vertex) {
+    Vertex add_vertex(Point vertex) {
         vprops.push_back();
         vpoint[*(--(vertices_end()))] = vertex;
+        return *(vertices_end());
     }
 
-    void add_sphere(Vertex vertex) {
+    Sphere add_sphere(Vertex vertex) {
         sprops.push_back();
         sconn[*(--(spheres_end()))] = vertex.idx();
+        return *(spheres_end());
     }
 
-    void add_edge(Vertex v0, Vertex v1) {
+    Edge add_edge(Vertex v0, Vertex v1) {
         eprops.push_back();
         econn[*(--(edges_end()))] = EdgeConnectivity(v0.idx(), v1.idx());
+        return *(edges_end());
     }
 
-    void add_face(Vertex v0, Vertex v1, Vertex v2) {
+    Face add_face(Vertex v0, Vertex v1, Vertex v2) {
         fprops.push_back();
         fconn[*(--(faces_end()))] = FaceConnectivity(v0.idx(), v1.idx(), v2.idx());
+        return *(faces_end());
     }
 
     void delete_vertex(Vertex v) {
