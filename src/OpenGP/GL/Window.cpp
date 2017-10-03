@@ -73,6 +73,12 @@ Window::Window(std::function<void(Window&)> display_callback, GLFWwindow *parent
     glfwSetWindowUserPointer(handle, this);
     glfwSetWindowCloseCallback(handle, &close_callback);
 
+    glfwSetKeyCallback(handle, key_callback);
+    glfwSetMouseButtonCallback(handle, mouse_button_callback);
+    glfwSetCursorPosCallback(handle, mouse_position_callback);
+    glfwSetScrollCallback(handle, mouse_scroll_callback);
+    glfwSetCursorEnterCallback(handle, mouse_enter_callback);
+
     /// Wipe Startup Errors (TODO: check who causes them? GLEW?)
     while (glGetError() != GL_NO_ERROR) {}
 
@@ -145,6 +151,37 @@ void Window::close() {
     close_flag = true;
 
 }
+
+void Window::mouse_button_callback(GLFWwindow *handle, int button, int action, int mods) {
+    MouseButtonEvent event;
+    event.button = button;
+    event.released = (action == GLFW_RELEASE);
+    wrapper(handle).send_event(event);
+}
+
+void Window::mouse_position_callback(GLFWwindow *handle, double x, double y) {
+    MouseMoveEvent event;
+    event.position = Vec2(x, y);
+    wrapper(handle).send_event(event);
+}
+
+void Window::mouse_enter_callback(GLFWwindow *handle, int entered) {
+    //wrapper(handle).send_event(event);
+}
+
+void Window::mouse_scroll_callback(GLFWwindow *handle, double dx, double dy) {
+    MouseScrollEvent event;
+    event.delta = Vec2(dx, dy);
+    wrapper(handle).send_event(event);
+}
+
+void Window::key_callback(GLFWwindow *handle, int key, int scancode, int action, int mods) {
+    KeyEvent event;
+    event.key = key;
+    event.released = (action == GLFW_RELEASE);
+    wrapper(handle).send_event(event);
+}
+
 
 //=============================================================================
 } // OpenGP::

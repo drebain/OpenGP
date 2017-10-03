@@ -5,6 +5,7 @@
 #pragma once
 
 #include <OpenGP/GL/Entity.h>
+#include <OpenGP/GL/ImguiRenderer.h>
 
 
 //=============================================================================
@@ -12,9 +13,13 @@ namespace OpenGP {
 //=============================================================================
 
 class GUICanvasComponent : public Component {
+private:
+
+    ImguiRenderer renderer;
+
 public:
 
-
+    void set_window() {}
 
 };
 

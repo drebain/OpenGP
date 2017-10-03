@@ -9,6 +9,7 @@
 #include <functional>
 
 #include <OpenGP/headeronly.h>
+#include <OpenGP/types.h>
 #include <OpenGP/GL/EventProvider.h>
 #include <OpenGP/GL/glfw.h>
 
@@ -45,6 +46,12 @@ private:
     bool close_flag = false;
 
     std::function<void(Window&)> display_callback = [](Window&){};
+
+    HEADERONLY_INLINE static void mouse_button_callback(GLFWwindow *handle, int button, int action, int mods);
+    HEADERONLY_INLINE static void mouse_position_callback(GLFWwindow *handle, double x, double y);
+    HEADERONLY_INLINE static void mouse_enter_callback(GLFWwindow *handle, int entered);
+    HEADERONLY_INLINE static void mouse_scroll_callback(GLFWwindow *handle, double dx, double dy);
+    HEADERONLY_INLINE static void key_callback(GLFWwindow *handle, int key, int scancode, int action, int mods);
 
 public:
 

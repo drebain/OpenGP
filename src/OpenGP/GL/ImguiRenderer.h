@@ -5,6 +5,7 @@
 #pragma once
 
 #include <OpenGP/external/imgui/imgui.h>
+#include <OpenGP/external/imgui/ImGuizmo.h>
 
 #include <OpenGP/GL/Shader.h>
 #include <OpenGP/GL/VertexArrayObject.h>
@@ -114,6 +115,7 @@ public:
         io.DeltaTime = 0.1;
 
         ImGui::NewFrame();
+        ImGuizmo::BeginFrame();
 
     }
 

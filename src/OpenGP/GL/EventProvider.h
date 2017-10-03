@@ -8,6 +8,7 @@
 #include <memory>
 #include <typeindex>
 #include <list>
+#include <iostream>
 
 
 //=============================================================================
@@ -26,7 +27,7 @@ private:
 
 public:
 
-    ~EventSentinel() = default;
+    ~EventSentinel() { std::cout << "sentinel deleted" << std::endl; }
 
     EventSentinel() : handle(new int(0)) {}
 
@@ -53,7 +54,7 @@ protected:
         auto idx = std::type_index(typeid(EventType));
 
         for (auto &wrapper : listeners[idx]) {
-            wrapper(reinterpret_cast<void*>(&event));
+            wrapper(reinterpret_cast<void*>(const_cast<EventType*>(&event)));
         }
 
     }
@@ -85,7 +86,7 @@ public:
 
             } else {
 
-                remove_listener<EventType>(it);
+                //remove_listener<EventType>(it);
 
             }
 

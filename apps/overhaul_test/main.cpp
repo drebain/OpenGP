@@ -50,6 +50,8 @@ int main(int argc, char** argv){
 
         imrenderer.begin_frame(width, height);
 
+        //ImGuizmo::Manipulate();
+
         ImGui::BeginMainMenuBar();
         ImGui::MenuItem("File");
         ImGui::MenuItem("Edit");
@@ -65,8 +67,15 @@ int main(int argc, char** argv){
 
     });
 
-    window.add_listener<int>([](const int &i){
-        mLogger() << i;
+    std::unique_ptr<EventSentinel> sentinel(new EventSentinel());
+
+    window.add_listener<MouseMoveEvent>([](const MouseMoveEvent &e){
+        mLogger() << e.position(0) << e.position(1);
+    }, *sentinel);
+
+    window.add_listener<MouseButtonEvent>([&](const MouseButtonEvent &e){
+        mLogger() << "reset";
+        sentinel.reset();
     });
 
     window.set_title("Test Window");
