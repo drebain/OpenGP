@@ -163,6 +163,7 @@ void Window::mouse_position_callback(GLFWwindow *handle, double x, double y) {
     MouseMoveEvent event;
     event.position = Vec2(x, y);
     wrapper(handle).send_event(event);
+    wrapper(handle).input.mouse_position = event.position;
 }
 
 void Window::mouse_enter_callback(GLFWwindow *handle, int entered) {

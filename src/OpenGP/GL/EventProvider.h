@@ -27,7 +27,7 @@ private:
 
 public:
 
-    ~EventSentinel() { std::cout << "sentinel deleted" << std::endl; }
+    ~EventSentinel() {}
 
     EventSentinel() : handle(new int(0)) {}
 
@@ -36,6 +36,10 @@ public:
 
     EventSentinel &operator=(const EventSentinel&) = delete;
     EventSentinel &operator=(EventSentinel&&) = default;
+
+    void reset() {
+        handle = std::shared_ptr<int>(new int(0));
+    }
 
 };
 
@@ -86,6 +90,7 @@ public:
 
             } else {
 
+                // TODO: fix segfault that this causes
                 //remove_listener<EventType>(it);
 
             }

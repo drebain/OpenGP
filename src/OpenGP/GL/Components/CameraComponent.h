@@ -37,12 +37,28 @@ public:
         return window != nullptr;
     }
 
-    void draw_to_window(Window &window) {
+    Mat4x4 get_view() const {
+        auto &t = get<TransformComponent>();
+        return look_at(t.position, Vec3(t.position + t.forward()), t.up());
+    }
+
+    Mat4x4 get_projection() const {
+        auto &t = get<TransformComponent>();
+        int width, height;
+        std::tie(width, height) = window->get_size();
+        return perspective(vfov, (float)width / (float)height, near_plane, far_plane);
+    }
+
+    void draw() {
+
+        if (window == nullptr) {
+            mFatal() << "Camera window not set";
+        }
 
         RenderContext context;
 
         int width, height;
-        std::tie(width, height) = window.get_size();
+        std::tie(width, height) = window->get_size();
 
         glViewport(0, 0, width, height);
         glClearColor(0.15f, 0.15f, 0.15f, 1);
@@ -77,6 +93,10 @@ public:
 
     Window &get_window() {
         return *window;
+    }
+
+    void set_window(Window &window) {
+        this->window = &window;
     }
 
 };

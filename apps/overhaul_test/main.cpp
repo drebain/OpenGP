@@ -7,6 +7,7 @@
 #include <OpenGP/GL/Scene.h>
 #include <OpenGP/GL/Components/WorldRenderComponent.h>
 #include <OpenGP/GL/Components/CameraComponent.h>
+#include <OpenGP/GL/Components/GUICanvasComponent.h>
 #include <OpenGP/SurfaceMesh/SurfaceMesh.h>
 #include <OpenGP/SurfaceMesh/GL/SurfaceMeshRenderer.h>
 #include <OpenGP/GL/ImguiRenderer.h>
@@ -40,17 +41,25 @@ int main(int argc, char** argv){
 
     auto &cam = scene.create_entity_with<CameraComponent>();
     cam.get<TransformComponent>().position = Vec3(3, 3, -10);
+    //cam.get<TransformComponent>().position = Vec3(0, 0, -3);
+
+    auto &canvas = scene.create_entity_with<GUICanvasComponent>();
 
     auto &window = app.create_window([&](Window &window){
 
-        cam.draw_to_window(window);
+        cam.draw();
 
         int width, height;
         std::tie(width, height) = window.get_size();
 
         imrenderer.begin_frame(width, height);
 
-        //ImGuizmo::Manipulate();
+        Mat4x4 proj = cam.get_projection();
+        Mat4x4 view = cam.get_view();
+        Mat4x4 model = Mat4x4::Identity();
+
+        //ImGuizmo::Manipulate(view.data(), proj.data(), ImGuizmo::ROTATE, ImGuizmo::WORLD, model.data());
+        //ImGuizmo::DrawCube(view.data(), proj.data(), model.data());
 
         ImGui::BeginMainMenuBar();
         ImGui::MenuItem("File");
@@ -67,6 +76,10 @@ int main(int argc, char** argv){
 
     });
 
+    cam.set_window(window);
+    canvas.set_camera(cam);
+
+/*
     std::unique_ptr<EventSentinel> sentinel(new EventSentinel());
 
     window.add_listener<MouseMoveEvent>([](const MouseMoveEvent &e){
@@ -76,7 +89,7 @@ int main(int argc, char** argv){
     window.add_listener<MouseButtonEvent>([&](const MouseButtonEvent &e){
         mLogger() << "reset";
         sentinel.reset();
-    });
+    });*/
 
     window.set_title("Test Window");
 

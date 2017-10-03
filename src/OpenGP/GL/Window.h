@@ -80,6 +80,24 @@ public:
 
     HEADERONLY_INLINE void close();
 
+    HEADERONLY_INLINE void capture_mouse();
+    HEADERONLY_INLINE void capture_keyboard();
+
+    struct Input {
+
+        bool mouse_captured, keyboard_captured;
+
+        Vec2 mouse_position;
+    };
+
+private:
+
+    Input input;
+
+public:
+
+    const Input &get_input() const { return input; }
+
 };
 
 //=============================================================================
