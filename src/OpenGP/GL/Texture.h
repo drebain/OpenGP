@@ -206,6 +206,34 @@ public:
 
     }
 
+    template <typename ImageType>
+    void download(ImageType &image) {
+
+        static_assert(std::is_same<
+            Texture<INTERNAL_FORMAT, FORMAT, TYPE>,
+            typename TextureTypeBuilder<ImageType>::Type
+        >::value, "Incompatible Image and texture types");
+
+        int width, height;
+        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
+        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+
+        image.resize(height, width);
+
+        download_raw(image.data());
+
+    }
+
+    void download_raw(void *data) {
+
+        bind();
+
+        glGetTexImage(GL_TEXTURE_2D, 0, FORMAT, TYPE, data);
+
+        unbind();
+
+    }
+
 };
 
 using RGBA8Texture = Texture<GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE>;

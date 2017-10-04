@@ -32,13 +32,13 @@ public:
     void attach_color_texture(GenericTexture &texture, int attachment = 0) {
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment, GL_TEXTURE_2D, texture.id(), 0);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, get_default());
     }
 
     void attach_depth_texture(GenericTexture &texture) {
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture.id(), 0);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, get_default());
     }
 
     void bind() {
@@ -46,7 +46,22 @@ public:
     }
 
     void unbind() {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, get_default());
+    }
+
+    static void override_default(const Framebuffer &fb) {
+        get_default() = fb.fbo;
+    }
+
+    static void reset_default() {
+        get_default() = 0;
+    }
+
+private:
+
+    static GLuint &get_default() {
+        static GLuint default_fbo;
+        return default_fbo;
     }
 
 };

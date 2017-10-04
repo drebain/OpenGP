@@ -28,6 +28,8 @@ public:
 
     HEADERONLY_INLINE void upload_mesh(const SurfaceMesh &mesh);
 
+    HEADERONLY_INLINE GPUMesh &get_gpu_mesh();
+
 };
 
 //=============================================================================

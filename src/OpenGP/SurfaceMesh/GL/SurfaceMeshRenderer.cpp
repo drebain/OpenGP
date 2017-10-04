@@ -87,6 +87,10 @@ void SurfaceMeshRenderer::upload_mesh(const SurfaceMesh &mesh) {
 
 }
 
+GPUMesh &SurfaceMeshRenderer::get_gpu_mesh() {
+    return gpu_mesh;
+}
+
 //=============================================================================
 } // OpenGP::
 //=============================================================================

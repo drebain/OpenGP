@@ -28,6 +28,16 @@ namespace {
 
 }
 
+Application::WindowContainer::~WindowContainer() {
+
+    auto old_context = glfwGetCurrentContext();
+    glfwMakeContextCurrent(window->handle);
+
+    fsquad.reset();
+
+    glfwMakeContextCurrent(old_context);
+}
+
 Application::WindowContainer::WindowContainer(Application &app, std::function<void(Window&)> user_display_callback) {
 
     auto display_callback = [this, user_display_callback, &app] (Window &window) {
@@ -51,11 +61,13 @@ Application::WindowContainer::WindowContainer(Application &app, std::function<vo
         }
 
         framebuffer.bind();
+        Framebuffer::override_default(framebuffer);
 
         user_display_callback(window);
 
+        Framebuffer::reset_default();
         framebuffer.unbind();
-        
+
         glFlush();
 
         glfwMakeContextCurrent(old_context);
@@ -134,6 +146,8 @@ int Application::run() {
     running = true;
 
     while (running && !close_requested) {
+
+        glfwMakeContextCurrent(hidden_window);
 
         std::vector<decltype(windows.begin())> to_close;
 

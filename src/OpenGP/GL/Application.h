@@ -33,6 +33,8 @@ private:
 
         HEADERONLY_INLINE WindowContainer(Application &app, std::function<void(Window&)> user_display_callback);
 
+        HEADERONLY_INLINE ~WindowContainer();
+
     };
 
     GLFWwindow *hidden_window;

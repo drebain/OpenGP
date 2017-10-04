@@ -38,7 +38,12 @@ struct MouseScrollEvent {
     Vec2 delta;
 };
 
+class Application;
+
 class Window : public EventProvider {
+
+    friend class Application;
+
 private:
 
     GLFWwindow* handle = nullptr;
