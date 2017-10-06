@@ -16,7 +16,10 @@
 namespace OpenGP {
 //=============================================================================
 
-class CameraComponent : public Component {
+struct GUIRenderEvent {};
+
+
+class CameraComponent : public Component, public EventProvider {
 private:
 
     Window *window = nullptr;
@@ -88,6 +91,10 @@ public:
 
             renderable.get_renderer().render(context);
         }
+
+        GUIRenderEvent event;
+
+        send_event(event);
 
     }
 

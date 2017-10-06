@@ -25,6 +25,8 @@ private:
     bool mouse_was_down_this_frame[3];
     bool mouse_down[3];
 
+    std::function<void()> action;
+
 public:
 
     void set_camera(CameraComponent &camera) {
@@ -34,25 +36,35 @@ public:
 
         this->camera = &camera;
 
-        Window &window = camera.get_window();
+        camera.add_listener<GUIRenderEvent>([this](const GUIRenderEvent &event){
 
-        window.add_listener<MouseButtonEvent>([this](const MouseButtonEvent &event) {
+            auto &cam = *(this->camera);
+            auto &window = cam.get_window();
 
-            if (event.button < 0 || event.button > 2)
-                return;
+            int width, height;
+            std::tie(width, height) = window.get_size();
 
-            if (event.released) {
+            auto &io = ImGui::GetIO();
+            auto &input = window.get_input();
 
-                mouse_down[event.button] = mouse_was_down_this_frame[event.button];
+            io.MousePos = ImVec2(input.mouse_position(0), input.mouse_position(1));
 
-            } else {
+            for (int i = 0;i < 3;i++)
+                io.MouseDown[i] = input.get_mouse(i);
 
-                mouse_down[event.button] = true;
-                mouse_was_down_this_frame[event.button] = true;
+            renderer.begin_frame(width, height);
 
-            }
+            if (action)
+                action();
+
+            renderer.end_frame();
 
         }, sentinel);
+
+    }
+
+    void set_action(std::function<void()> action) {
+        this->action = action;
     }
 
 };

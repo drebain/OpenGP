@@ -88,11 +88,40 @@ public:
     HEADERONLY_INLINE void capture_mouse();
     HEADERONLY_INLINE void capture_keyboard();
 
-    struct Input {
+    class Input {
+
+        friend class Window;
+
+    private:
+
+        std::unordered_map<int, bool> buttons;
+        std::unordered_map<KeyCode, bool> keys;
+
+    public:
 
         bool mouse_captured, keyboard_captured;
 
         Vec2 mouse_position;
+        Vec2 mouse_scroll_delta;
+
+        bool get_mouse(int button) const {
+            auto it = buttons.find(button);
+            if (it == buttons.end()) {
+                return false;
+            } else {
+                return (*it).second;
+            }
+        }
+
+        bool get_key(KeyCode key) const {
+            auto it = keys.find(key);
+            if (it == keys.end()) {
+                return false;
+            } else {
+                return (*it).second;
+            }
+        }
+
     };
 
 private:
