@@ -138,6 +138,15 @@ void Window::poll() {
 
     glfwPollEvents();
 
+    input.mouse_delta = Vec2(0, 0);
+    input.mouse_scroll_delta = Vec2(0, 0);
+
+    for (auto &action : input_actions) {
+        action();
+    }
+
+    input_actions.clear();
+
 }
 
 bool Window::should_close() const {
@@ -152,26 +161,52 @@ void Window::close() {
 
 }
 
+void Window::capture_mouse() {
+    input.mouse_captured = true;
+}
+
+void Window::capture_keyboard() {
+    input.keyboard_captured = true;
+}
+
+void Window::release_mouse() {
+    input.mouse_captured = false;
+}
+
+void Window::release_keyboard() {
+    input.keyboard_captured = false;
+}
+
 void Window::mouse_button_callback(GLFWwindow *handle, int button, int action, int mods) {
 
-    wrapper(handle).input.buttons[button] = (action != GLFW_RELEASE);
+    wrapper(handle).input_actions.push_back([=](){
 
-    MouseButtonEvent event;
-    event.button = button;
-    event.released = (action == GLFW_RELEASE);
-    wrapper(handle).send_event(event);
+        wrapper(handle).input.buttons[button] = (action != GLFW_RELEASE);
+
+        MouseButtonEvent event;
+        event.button = button;
+        event.released = (action == GLFW_RELEASE);
+        wrapper(handle).send_event(event);
+
+    });
 
 
 }
 
 void Window::mouse_position_callback(GLFWwindow *handle, double x, double y) {
 
-    wrapper(handle).input.mouse_position = Vec2(x, y);
+    wrapper(handle).input_actions.push_back([=](){
 
-    MouseMoveEvent event;
-    event.position = Vec2(x, y);
-    wrapper(handle).send_event(event);
-    wrapper(handle).input.mouse_position = event.position;
+        Vec2 new_position(x, y);
+
+        wrapper(handle).input.mouse_delta = new_position - wrapper(handle).input.mouse_position;
+        wrapper(handle).input.mouse_position = new_position;
+
+        MouseMoveEvent event;
+        event.position = new_position;
+        wrapper(handle).send_event(event);
+
+    });
 }
 
 void Window::mouse_enter_callback(GLFWwindow *handle, int entered) {
@@ -180,21 +215,30 @@ void Window::mouse_enter_callback(GLFWwindow *handle, int entered) {
 
 void Window::mouse_scroll_callback(GLFWwindow *handle, double dx, double dy) {
 
-    wrapper(handle).input.mouse_scroll_delta = Vec2(dx, dy);
+    wrapper(handle).input_actions.push_back([=](){
 
-    MouseScrollEvent event;
-    event.delta = Vec2(dx, dy);
-    wrapper(handle).send_event(event);
+        wrapper(handle).input.mouse_scroll_delta = Vec2(dx, dy);
+
+        MouseScrollEvent event;
+        event.delta = Vec2(dx, dy);
+        wrapper(handle).send_event(event);
+
+    });
 }
 
 void Window::key_callback(GLFWwindow *handle, int key, int scancode, int action, int mods) {
 
-    wrapper(handle).input.keys[key] = (action != GLFW_RELEASE);
+    wrapper(handle).input_actions.push_back([=](){
 
-    KeyEvent event;
-    event.key = key;
-    event.released = (action == GLFW_RELEASE);
-    wrapper(handle).send_event(event);
+        wrapper(handle).input.keys[key] = (action != GLFW_RELEASE);
+
+        KeyEvent event;
+        event.key = key;
+        event.released = (action == GLFW_RELEASE);
+        wrapper(handle).send_event(event);
+
+    });
+
 }
 
 

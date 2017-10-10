@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <tuple>
 #include <functional>
 
@@ -50,6 +51,8 @@ private:
 
     bool close_flag = false;
 
+    std::vector<std::function<void()>> input_actions;
+
     std::function<void(Window&)> display_callback = [](Window&){};
 
     HEADERONLY_INLINE static void mouse_button_callback(GLFWwindow *handle, int button, int action, int mods);
@@ -88,6 +91,9 @@ public:
     HEADERONLY_INLINE void capture_mouse();
     HEADERONLY_INLINE void capture_keyboard();
 
+    HEADERONLY_INLINE void release_mouse();
+    HEADERONLY_INLINE void release_keyboard();
+
     class Input {
 
         friend class Window;
@@ -101,7 +107,7 @@ public:
 
         bool mouse_captured, keyboard_captured;
 
-        Vec2 mouse_position;
+        Vec2 mouse_position, mouse_delta;
         Vec2 mouse_scroll_delta;
 
         bool get_mouse(int button) const {

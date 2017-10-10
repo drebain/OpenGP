@@ -59,6 +59,17 @@ public:
 
             renderer.end_frame();
 
+            if (io.WantCaptureMouse)
+                window.capture_mouse();
+            else
+                window.release_mouse();
+
+
+            if (io.WantCaptureKeyboard)
+                window.capture_keyboard();
+            else
+                window.release_keyboard();
+
         }, sentinel);
 
     }

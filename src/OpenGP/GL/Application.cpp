@@ -149,9 +149,20 @@ int Application::run() {
 
         glfwMakeContextCurrent(hidden_window);
 
+        for (auto &container : windows) {
+            container.window->poll();
+        }
+
+        update_callback();
+
+        for (auto &container : windows) {
+
+            container.window->draw();
+
+        }
+
         std::vector<decltype(windows.begin())> to_close;
 
-        glfwPollEvents();
         for (auto it = windows.begin();it != windows.end();++it)
             if ((*it).window->should_close())
                 to_close.push_back(it);
@@ -160,17 +171,7 @@ int Application::run() {
             windows.erase(it);
         }
 
-        update_callback();
-
-        running = false;
-
-        for (auto &container : windows) {
-
-            running = true;
-
-            container.window->draw();
-
-        }
+        running = !windows.empty();
 
     }
 

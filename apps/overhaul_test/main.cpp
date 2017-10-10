@@ -6,7 +6,7 @@
 #include <OpenGP/GL/Application.h>
 #include <OpenGP/GL/Scene.h>
 #include <OpenGP/GL/Components/WorldRenderComponent.h>
-#include <OpenGP/GL/Components/CameraComponent.h>
+#include <OpenGP/GL/Components/TrackballComponent.h>
 #include <OpenGP/GL/Components/GUICanvasComponent.h>
 #include <OpenGP/SurfaceMesh/SurfaceMesh.h>
 #include <OpenGP/SurfaceMesh/GL/SurfaceMeshRenderer.h>
@@ -62,8 +62,10 @@ int main(int argc, char** argv){
         }
         ImGui::EndMainMenuBar();
 
-        ImGui::Begin("Test Window 42");
-        ImGui::Text("This is the answer to Life, The Universe, and Everything");
+        ImGui::Begin("Test Window");
+        ImGui::Text("test window");
+        float test_float;
+        ImGui::InputFloat("Test Input", &test_float);
         ImGui::End();
 
     });
@@ -72,7 +74,9 @@ int main(int argc, char** argv){
     auto &renderer = obj.set_renderer<SurfaceMeshRenderer>();
     renderer.upload_mesh(mesh);
 
-    auto &cam = scene.create_entity_with<CameraComponent>();
+    auto &trackball = scene.create_entity_with<TrackballComponent>();
+    auto &cam = trackball.get<CameraComponent>();
+    trackball.center = Vec3(0, 0, 0);
     cam.get<TransformComponent>().position = Vec3(3, 3, -10);
 
     auto &window = app.create_window([&](Window &window){
