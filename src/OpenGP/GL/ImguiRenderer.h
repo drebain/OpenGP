@@ -140,6 +140,8 @@ public:
         ImGui::NewFrame();
         ImGuizmo::BeginFrame();
 
+        ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+
     }
 
     void end_frame() {

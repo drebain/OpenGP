@@ -35,41 +35,6 @@ int main(int argc, char** argv){
 
     auto &canvas = scene.create_entity_with<GUICanvasComponent>();
 
-    canvas.set_action([](){
-
-        //Mat4x4 proj = cam.get_projection();
-        //Mat4x4 view = cam.get_view();
-        //Mat4x4 model = Mat4x4::Identity();
-
-        //ImGuizmo::Manipulate(view.data(), proj.data(), ImGuizmo::ROTATE, ImGuizmo::WORLD, model.data());
-        //ImGuizmo::DrawCube(view.data(), proj.data(), model.data());
-
-        ImGui::BeginMainMenuBar();
-        if (ImGui::BeginMenu("File")) {
-            ImGui::MenuItem("New", "ctrl + n");
-            ImGui::MenuItem("Open");
-            ImGui::MenuItem("Save");
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("Edit")) {
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("View")) {
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("Help")) {
-            ImGui::EndMenu();
-        }
-        ImGui::EndMainMenuBar();
-
-        ImGui::Begin("Test Window");
-        ImGui::Text("test window");
-        float test_float;
-        ImGui::InputFloat("Test Input", &test_float);
-        ImGui::End();
-
-    });
-
     auto &obj = scene.create_entity_with<WorldRenderComponent>();
     auto &renderer = obj.set_renderer<SurfaceMeshRenderer>();
     renderer.upload_mesh(mesh);
@@ -81,6 +46,48 @@ int main(int argc, char** argv){
 
     auto &window = app.create_window([&](Window &window){
         cam.draw();
+    });
+
+    canvas.set_action([&](){
+
+        Mat4x4 proj = cam.get_projection();
+        Mat4x4 view = cam.get_view();
+        Mat4x4 model = Mat4x4::Identity();
+
+        ImGuizmo::Manipulate(view.data(), proj.data(), ImGuizmo::ROTATE, ImGuizmo::WORLD, model.data());
+
+        Quaternion r(model.block<3, 3>(0, 0));
+        Quaternion rp = obj.get<TransformComponent>().rotation;
+
+        obj.get<TransformComponent>().rotation = r * rp;
+
+        ImGui::BeginMainMenuBar();
+        if (ImGui::BeginMenu("File")) {
+            ImGui::MenuItem("Quit");
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Edit")) {
+            ImGui::MenuItem("Translate");
+            ImGui::MenuItem("Rotate");
+            ImGui::MenuItem("Scale");
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("View")) {
+            ImGui::MenuItem("Wireframe");
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Help")) {
+            ImGui::MenuItem("There is no help");
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+
+        ImGui::Begin("Test Window");
+        ImGui::Text("test window");
+        static Vec3 color;
+        ImGui::ColorEdit3("Color", color.data());
+        ImGui::End();
+
     });
 
     cam.set_window(window);

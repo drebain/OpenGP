@@ -60,6 +60,7 @@ private:
     HEADERONLY_INLINE static void mouse_enter_callback(GLFWwindow *handle, int entered);
     HEADERONLY_INLINE static void mouse_scroll_callback(GLFWwindow *handle, double dx, double dy);
     HEADERONLY_INLINE static void key_callback(GLFWwindow *handle, int key, int scancode, int action, int mods);
+    HEADERONLY_INLINE static void char_callback(GLFWwindow *handle, unsigned int codepoint);
 
 public:
 
@@ -102,6 +103,7 @@ public:
 
         std::unordered_map<int, bool> buttons;
         std::unordered_map<KeyCode, bool> keys;
+        std::u32string text;
 
     public:
 
@@ -126,6 +128,10 @@ public:
             } else {
                 return (*it).second;
             }
+        }
+
+        const std::u32string &get_text() const {
+            return text;
         }
 
     };

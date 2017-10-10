@@ -24,7 +24,8 @@ public:
 
     Vec3 center;
 
-    float sensitivity = 0.01;
+    float pan_sensitivity = 0.005;
+    float rotate_sensitivity = 0.01;
     float scroll_sensitivity = -0.1;
 
     void init() {
@@ -48,13 +49,21 @@ public:
 
                 if (input.get_mouse(2)) {
 
-                    hangle += input.mouse_delta[0] * sensitivity;
-                    vangle += input.mouse_delta[1] * sensitivity;
+                    if (input.get_key(GLFW_KEY_LEFT_SHIFT)) {
 
-                    Quaternion hrot(Eigen::AngleAxisf(hangle, Vec3(0, 1, 0)));
-                    Quaternion vrot(Eigen::AngleAxisf(vangle, Vec3(1, 0, 0)));
+                        center += radius * pan_sensitivity * (transform.right() * input.mouse_delta[0] + transform.up() * input.mouse_delta[1]);
 
-                    transform.rotation = base_rotation * hrot * vrot;
+                    } else {
+
+                        hangle -= input.mouse_delta[0] * rotate_sensitivity;
+                        vangle += input.mouse_delta[1] * rotate_sensitivity;
+
+                        Quaternion hrot(Eigen::AngleAxisf(hangle, Vec3(0, 1, 0)));
+                        Quaternion vrot(Eigen::AngleAxisf(vangle, Vec3(1, 0, 0)));
+
+                        transform.rotation = base_rotation * hrot * vrot;
+
+                    }
 
                 } else {
                     mouse_control_active = false;

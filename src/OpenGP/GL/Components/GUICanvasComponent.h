@@ -22,8 +22,7 @@ private:
 
     CameraComponent *camera = nullptr;
 
-    bool mouse_was_down_this_frame[3];
-    bool mouse_down[3];
+    bool mouse_captured_by_ui = false;
 
     std::function<void()> action;
 
@@ -52,17 +51,28 @@ public:
             for (int i = 0;i < 3;i++)
                 io.MouseDown[i] = input.get_mouse(i);
 
+            for (uint32_t codepoint : input.get_text())
+                io.AddInputCharacter(codepoint);
+
             renderer.begin_frame(width, height);
+
+            ImGuizmo::Enable(!mouse_captured_by_ui);
 
             if (action)
                 action();
 
             renderer.end_frame();
 
-            if (io.WantCaptureMouse)
+            if (io.WantCaptureMouse) {
                 window.capture_mouse();
-            else
+                mouse_captured_by_ui = true;
+            } else if (ImGuizmo::IsUsing()) {
+                window.capture_mouse();
+                mouse_captured_by_ui = false;
+            } else {
                 window.release_mouse();
+                mouse_captured_by_ui = false;
+            }
 
 
             if (io.WantCaptureKeyboard)

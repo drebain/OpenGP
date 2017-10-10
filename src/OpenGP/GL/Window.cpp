@@ -78,6 +78,7 @@ Window::Window(std::function<void(Window&)> display_callback, GLFWwindow *parent
     glfwSetCursorPosCallback(handle, mouse_position_callback);
     glfwSetScrollCallback(handle, mouse_scroll_callback);
     glfwSetCursorEnterCallback(handle, mouse_enter_callback);
+    glfwSetCharCallback(handle, char_callback);
 
     /// Wipe Startup Errors (TODO: check who causes them? GLEW?)
     while (glGetError() != GL_NO_ERROR) {}
@@ -140,6 +141,7 @@ void Window::poll() {
 
     input.mouse_delta = Vec2(0, 0);
     input.mouse_scroll_delta = Vec2(0, 0);
+    input.text.clear();
 
     for (auto &action : input_actions) {
         action();
@@ -236,6 +238,16 @@ void Window::key_callback(GLFWwindow *handle, int key, int scancode, int action,
         event.key = key;
         event.released = (action == GLFW_RELEASE);
         wrapper(handle).send_event(event);
+
+    });
+
+}
+
+void Window::char_callback(GLFWwindow *handle, uint32_t codepoint) {
+
+    wrapper(handle).input_actions.push_back([=](){
+
+        wrapper(handle).input.text += codepoint;
 
     });
 
