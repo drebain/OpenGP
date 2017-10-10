@@ -15,6 +15,7 @@ namespace OpenGP {
 class TrackballComponent : public Component {
 private:
 
+    bool mouse_control_active = false;
 
 public:
 
@@ -30,6 +31,17 @@ public:
     }
 
     void update() {
+
+        auto &camera = get<CameraComponent>();
+
+        if (!camera.has_window())
+            return;
+
+        auto &input = camera.get_window().get_input();
+
+        if (input.mouse_captured) {
+
+        }
 
     }
 

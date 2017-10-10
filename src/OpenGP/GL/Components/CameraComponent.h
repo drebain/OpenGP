@@ -36,7 +36,7 @@ public:
         require<TransformComponent>();
     }
 
-    bool has_window() {
+    bool has_window() const {
         return window != nullptr;
     }
 

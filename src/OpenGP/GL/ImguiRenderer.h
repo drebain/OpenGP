@@ -168,7 +168,7 @@ public:
         shader.bind();
         shader.set_uniform("tex", 0);
         shader.set_uniform("P", P);
-        glBindSampler(0, 0);
+        glActiveTexture(GL_TEXTURE0);
 
         vao.bind();
 
