@@ -15,7 +15,8 @@ const char *Material::default_code() {
         uniform vec3 base_color;
 
         vec4 shade() {
-            float diffuse = clamp(abs(dot(get_normal(), normalize(vec3(1,1,1)))), 0, 1);
+            vec3 lightdir = -get_forward();
+            float diffuse = clamp(abs(dot(get_normal(), normalize(lightdir))), 0, 1);
             vec3 ambient = vec3(0.1,0.11,0.13);
 
             return vec4(diffuse * base_color + ambient, 1);

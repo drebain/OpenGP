@@ -363,10 +363,10 @@ public:
     unsigned int n_edges() const { return edges_size() - deleted_edges; }
     unsigned int n_faces() const { return faces_size() - deleted_faces; }
 
-    bool is_valid(Vertex v) const { return v.idx() != 0 && v.idx() < vertices_size(); }
-    bool is_valid(Sphere s) const { return s.idx() != 0 && s.idx() < spheres_size(); }
-    bool is_valid(Edge e) const { return e.idx() != 0 && e.idx() < edges_size(); }
-    bool is_valid(Face f) const { return f.idx() != 0 && f.idx() < faces_size(); }
+    bool is_valid(Vertex v) const { return v.idx() != 0 && v.idx() < (int)vertices_size(); }
+    bool is_valid(Sphere s) const { return s.idx() != 0 && s.idx() < (int)spheres_size(); }
+    bool is_valid(Edge e) const { return e.idx() != 0 && e.idx() < (int)edges_size(); }
+    bool is_valid(Face f) const { return f.idx() != 0 && f.idx() < (int)faces_size(); }
 
     template <class T>
     VertexProperty<T> add_vertex_property(const std::string& name, const T t=T()) {

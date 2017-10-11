@@ -81,6 +81,9 @@ public:
 
         for (auto &renderable : get_scene().all_of_type<WorldRenderComponent>()) {
 
+            if (!renderable.visible)
+                continue;
+
             auto &transform = renderable.get<TransformComponent>();
 
             context.translation = transform.position;

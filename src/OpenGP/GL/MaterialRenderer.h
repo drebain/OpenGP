@@ -39,10 +39,6 @@ struct RenderContext {
     Vec3 scale;
     Quaternion rotation;
 
-    // Render parameters
-
-    bool wireframe = false;
-
     // Matrices
 
     Mat4x4 M;
@@ -92,7 +88,14 @@ protected:
 
     Material material;
 
+    HEADERONLY_INLINE void build_shader(Shader &shader, const std::string &vshader, const std::string &fshader, const std::string &gshader = "");
+
+    HEADERONLY_INLINE void update_shader(Shader &shader, const RenderContext &context);
+
 public:
+
+    bool wireframe = false;
+    Vec3 wirecolor = Vec3(0, 0, 0);
 
     MaterialRenderer() {}
 
@@ -106,10 +109,6 @@ public:
 
     HEADERONLY_INLINE Material &get_material();
     HEADERONLY_INLINE const Material &get_material() const;
-
-    HEADERONLY_INLINE static void build_shader(Shader &shader, const Material &material, const std::string &vshader, const std::string &fshader);
-
-    HEADERONLY_INLINE static void update_shader(Shader &shader, const Material &material, const RenderContext &context);
 
 };
 

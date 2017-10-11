@@ -10,7 +10,9 @@
 #include <OpenGP/GL/Components/GUICanvasComponent.h>
 #include <OpenGP/SurfaceMesh/SurfaceMesh.h>
 #include <OpenGP/SurfaceMesh/GL/SurfaceMeshRenderer.h>
+#include <OpenGP/SphereMesh/GL/SphereMeshRenderer.h>
 #include <OpenGP/GL/ImguiRenderer.h>
+#include <OpenGP/GL/gl_debug.h>
 
 #define OPENGP_IMPLEMENT_ALL_IN_THIS_FILE
 #include <OpenGP/util/implementations.h>
@@ -18,16 +20,24 @@
 
 using namespace OpenGP;
 int main(int argc, char** argv){
-    std::string file = (argc==2) ? argv[1] : "bunny.obj";
+    std::string file = (argc > 1) ? argv[1] : "bunny.obj";
 
     SurfaceMesh mesh;
     bool success = mesh.read(file);
-    if(!success) mFatal() << "File not found";
+    if(!success) mFatal() << "File not found" << file;
     mesh.triangulate();
     mesh.update_face_normals();
     mesh.update_vertex_normals();
 
+    std::string file2 = (argc > 2) ? argv[2] : "example.smo";
+
+    SphereMesh mesh2;
+    success = mesh2.read(file2);
+    if(!success) mFatal() << "File not found" << file2;
+
     Application app;
+
+    GLDebug::enable();
 
     Scene scene;
 
@@ -38,6 +48,10 @@ int main(int argc, char** argv){
     auto &obj = scene.create_entity_with<WorldRenderComponent>();
     auto &renderer = obj.set_renderer<SurfaceMeshRenderer>();
     renderer.upload_mesh(mesh);
+
+    auto &obj2 = scene.create_entity_with<WorldRenderComponent>();
+    auto &renderer2 = obj2.set_renderer<SphereMeshRenderer>();
+    renderer2.upload_mesh(mesh2);
 
     auto &trackball = scene.create_entity_with<TrackballComponent>();
     auto &cam = trackball.get<CameraComponent>();
@@ -81,7 +95,7 @@ int main(int argc, char** argv){
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("View")) {
-            ImGui::MenuItem("Wireframe");
+            ImGui::MenuItem("Wireframe", nullptr, &renderer.wireframe);
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Help")) {
@@ -91,9 +105,11 @@ int main(int argc, char** argv){
         ImGui::EndMainMenuBar();
 
         ImGui::Begin("Test Window");
-        ImGui::Text("test window");
+        ImGui::Checkbox("Triangle Mesh", &obj.visible);
+        ImGui::Checkbox("Sphere Mesh", &obj2.visible);
         static Vec3 color(1,1,1);
-        ImGui::ColorEdit3("Color", color.data());
+        ImGui::ColorEdit3("Base Color", color.data());
+        ImGui::ColorEdit3("Wire Color", renderer.wirecolor.data());
         ImGui::End();
 
         renderer.get_material().set_property("base_color", color);

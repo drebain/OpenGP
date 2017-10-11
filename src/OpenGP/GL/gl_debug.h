@@ -88,11 +88,7 @@ namespace GLDebug {
 
     inline void enable(bool show_notifications=false) {
 
-        int version_major, version_minor;
-        glGetIntegerv(GL_MAJOR_VERSION, &version_major);
-        glGetIntegerv(GL_MINOR_VERSION, &version_minor);
-
-        if (version_minor >= 4 && version_minor >= 3) {
+        if (GLEW_KHR_debug) {
 
             glEnable(GL_DEBUG_OUTPUT);
             glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);

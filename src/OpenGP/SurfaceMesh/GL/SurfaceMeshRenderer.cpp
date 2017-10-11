@@ -1,3 +1,7 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 #include "SurfaceMeshRenderer.h"
 
 
@@ -5,40 +9,68 @@
 namespace OpenGP {
 //=============================================================================
 
-namespace {
+// vshader code
+const char *SurfaceMeshRenderer::vshader() {
+    return R"GLSL(
 
-    // vshader code
-    const static char *vshader = R"GLSL(
+        in vec3 vposition;
+        in vec3 vnormal;
 
-        in vec3 vbaryc;      ///< per-vertex barycentric
-        in vec3 vposition;   ///< per-vertex position
-        in vec3 vnormal;     ///< per-vertex normal
-
-        out vec3 fbaryc;     ///< per-fragment barycentric
-        out vec3 fposition;  ///< per-fragment position
-        out vec3 fnormal;    ///< per-fragment normal
+        out vec3 gposition;
+        out vec3 gnormal;
 
         void vertex() {
             gl_Position = get_MVP() * vec4(vposition, 1.0);
-            fposition = (get_M() * vec4(vposition, 1.0)).xyz;
-            fnormal = normalize( inverse(transpose(mat3(get_MV()))) * vnormal );
-            fbaryc = vbaryc;
+            gposition = (get_M() * vec4(vposition, 1.0)).xyz;
+            gnormal = normalize( inverse(transpose(mat3(get_M()))) * vnormal );
         }
 
     )GLSL";
+}
 
-    // fshader code
-    const static char *fshader = R"GLSL(
+// gshader code
+const char *SurfaceMeshRenderer::gshader() {
+    return R"GLSL(
+
+        // reddit.com/r/opengl/comments/34dhi7/wireframe_shader/cquax7r
+
+        layout (triangles) in;
+        layout (triangle_strip, max_vertices = 3) out;
+
+        in vec3 gnormal[];
+        in vec3 gposition[];
+
+        out vec3 fnormal;
+        out vec3 fposition;
+        noperspective out vec3 fwireframe;
+
+        void main() {
+            for (int i = 0;i < 3;i++) {
+                gl_Position = gl_in[i].gl_Position;
+                fnormal = gnormal[i];
+                fposition = gposition[i];
+                fwireframe = vec3(0, 0, 0);
+                fwireframe[i] = 1;
+                EmitVertex();
+            }
+        }
+
+    )GLSL";
+}
+
+// fshader code
+const char *SurfaceMeshRenderer::fshader() {
+    return R"GLSL(
 
         in vec3 fnormal;
-        in vec3 fbaryc;
         in vec3 fposition;
+        in vec3 fwireframe;
 
         // http://codeflow.org/entries/2012/aug/02/easy-wireframe-display-with-barycentric-coordinates
         float edgeFactor(){
-            vec3 d = 1.5 * fwidth(fbaryc);
-            vec3 a3 = smoothstep(vec3(0.0), d, fbaryc);
-            return min(min(a3.x, a3.y), a3.z);
+            vec3 d = 1.5 * fwidth(fwireframe);
+            vec3 a3 = smoothstep(vec3(0.0), d, fwireframe);
+            return 1.0f - min(min(a3.x, a3.y), a3.z);
         }
 
         void fragment() {
@@ -48,7 +80,6 @@ namespace {
         }
 
     )GLSL";
-
 }
 
 SurfaceMeshRenderer::SurfaceMeshRenderer() {
@@ -60,7 +91,7 @@ void SurfaceMeshRenderer::render(const RenderContext &context) {
     shader.bind();
 
     gpu_mesh.set_attributes(shader);
-    update_shader(shader, material, context);
+    update_shader(shader, context);
 
     gpu_mesh.draw();
 
@@ -69,7 +100,7 @@ void SurfaceMeshRenderer::render(const RenderContext &context) {
 
 void SurfaceMeshRenderer::rebuild() {
 
-    build_shader(shader, material, vshader, fshader);
+    build_shader(shader, vshader(), fshader(), gshader());
 
     shader.bind();
     gpu_mesh.set_attributes(shader);

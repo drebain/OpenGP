@@ -1,3 +1,7 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 #pragma once
 
 #include <OpenGP/GL/MaterialRenderer.h>
@@ -15,6 +19,10 @@ private:
     GPUMesh gpu_mesh;
 
     Shader shader;
+
+    HEADERONLY_INLINE static const char *vshader();
+    HEADERONLY_INLINE static const char *gshader();
+    HEADERONLY_INLINE static const char *fshader();
 
 public:
 

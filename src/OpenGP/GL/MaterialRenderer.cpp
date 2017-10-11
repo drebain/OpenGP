@@ -34,6 +34,21 @@ namespace {
                 return _uniform_far;
             }
 
+            uniform vec3 _uniform_eye;
+            vec3 get_eye() {
+                return _uniform_eye;
+            }
+
+            uniform vec3 _uniform_forward;
+            vec3 get_forward() {
+                return _uniform_forward;
+            }
+
+            uniform vec3 _uniform_up;
+            vec3 get_up() {
+                return _uniform_up;
+            }
+
             uniform mat4 _uniform_M;
             mat4 get_M() {
                 return _uniform_M;
@@ -67,6 +82,11 @@ namespace {
             uniform int _uniform_wireframe;
             int get_wireframe() {
                 return _uniform_wireframe;
+            }
+
+            uniform vec3 _uniform_wirecolor;
+            vec3 get_wirecolor() {
+                return _uniform_wirecolor;
             }
 
 
@@ -114,7 +134,10 @@ namespace {
 
             void main() {
                 fragment();
-                _out_color = shade();
+                vec4 shade_color = shade();
+                vec4 wire_color = vec4(get_wirecolor(), 1);
+                float wire_weight = get_wireframe() * get_wire_weight();
+                _out_color = mix(shade_color, wire_color, wire_weight);
             }
 
         )GLSL";
@@ -135,7 +158,7 @@ const Material &MaterialRenderer::get_material() const {
 }
 
 
-void MaterialRenderer::build_shader(Shader &shader, const Material &material, const std::string &vshader, const std::string &fshader) {
+void MaterialRenderer::build_shader(Shader &shader, const std::string &vshader, const std::string &fshader, const std::string &gshader) {
 
     shader.clear();
 
@@ -144,6 +167,12 @@ void MaterialRenderer::build_shader(Shader &shader, const Material &material, co
     vshader_source += vshader_preamble();
     vshader_source += vshader;
     vshader_source += base_vshader();
+
+    std::string gshader_source = "#version 330 core\n";
+    gshader_source += global_uniforms();
+    //gshader_source += vshader_preamble();
+    gshader_source += gshader;
+    //gshader_source += base_vshader();
 
     std::string fshader_source = "#version 330 core\n";
     fshader_source += global_uniforms();
@@ -154,6 +183,8 @@ void MaterialRenderer::build_shader(Shader &shader, const Material &material, co
 
     shader.add_vshader_from_source(vshader_source.c_str());
     shader.add_fshader_from_source(fshader_source.c_str());
+    if (gshader.size() > 0)
+        shader.add_gshader_from_source(gshader_source.c_str());
     shader.link();
 
     shader.bind();
@@ -162,7 +193,7 @@ void MaterialRenderer::build_shader(Shader &shader, const Material &material, co
 
 }
 
-void MaterialRenderer::update_shader(Shader &shader, const Material &material, const RenderContext &context) {
+void MaterialRenderer::update_shader(Shader &shader, const RenderContext &context) {
 
     shader.set_uniform("_uniform_aspect", context.aspect);
     shader.set_uniform("_uniform_vfov", context.vfov);
@@ -177,7 +208,9 @@ void MaterialRenderer::update_shader(Shader &shader, const Material &material, c
     shader.set_uniform("_uniform_MV", context.MV);
     shader.set_uniform("_uniform_VP", context.VP);
     shader.set_uniform("_uniform_MVP", context.MVP);
-    shader.set_uniform("_uniform_wireframe", context.wireframe);
+
+    shader.set_uniform("_uniform_wireframe", wireframe);
+    shader.set_uniform("_uniform_wirecolor", wirecolor);
 
     material.apply_properties(shader);
 

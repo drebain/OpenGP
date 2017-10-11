@@ -14,3 +14,4 @@ target_link_libraries(${FOLDERNAME} ${LIBRARIES})
 #--- data needs to be copied to run folder
 file(COPY ${PROJECT_SOURCE_DIR}/data/bunny.obj DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ${PROJECT_SOURCE_DIR}/data/fighter.obj DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${PROJECT_SOURCE_DIR}/data/example.smo DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

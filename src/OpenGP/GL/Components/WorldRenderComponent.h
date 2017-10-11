@@ -19,6 +19,8 @@ private:
     std::unique_ptr<MaterialRenderer> renderer;
 
 public:
+    
+    bool visible = true;
 
     void init() {
         require<TransformComponent>();
