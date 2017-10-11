@@ -48,28 +48,36 @@ int main(int argc, char** argv){
         cam.draw();
     });
 
+    ImGuizmo::OPERATION op = ImGuizmo::ROTATE;
+
     canvas.set_action([&](){
+
+        auto &transform = obj.get<TransformComponent>();
 
         Mat4x4 proj = cam.get_projection();
         Mat4x4 view = cam.get_view();
-        Mat4x4 model = Mat4x4::Identity();
+        Mat4x4 model = transform.get_matrix();
 
-        ImGuizmo::Manipulate(view.data(), proj.data(), ImGuizmo::ROTATE, ImGuizmo::WORLD, model.data());
+        ImGuizmo::Manipulate(view.data(), proj.data(), op, ImGuizmo::WORLD, model.data());
 
-        Quaternion r(model.block<3, 3>(0, 0));
-        Quaternion rp = obj.get<TransformComponent>().rotation;
-
-        obj.get<TransformComponent>().rotation = r * rp;
+        transform.set_matrix(model);
 
         ImGui::BeginMainMenuBar();
         if (ImGui::BeginMenu("File")) {
-            ImGui::MenuItem("Quit");
+            if (ImGui::MenuItem("Quit"))
+                app.close();
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Edit")) {
-            ImGui::MenuItem("Translate");
-            ImGui::MenuItem("Rotate");
-            ImGui::MenuItem("Scale");
+            if (ImGui::MenuItem("Translate"))
+                op = ImGuizmo::TRANSLATE;
+
+            if (ImGui::MenuItem("Rotate"))
+                op = ImGuizmo::ROTATE;
+
+            if (ImGui::MenuItem("Scale"))
+                op = ImGuizmo::SCALE;
+
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("View")) {
@@ -84,9 +92,11 @@ int main(int argc, char** argv){
 
         ImGui::Begin("Test Window");
         ImGui::Text("test window");
-        static Vec3 color;
+        static Vec3 color(1,1,1);
         ImGui::ColorEdit3("Color", color.data());
         ImGui::End();
+
+        renderer.get_material().set_property("base_color", color);
 
     });
 

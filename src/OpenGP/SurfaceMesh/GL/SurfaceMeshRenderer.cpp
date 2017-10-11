@@ -60,7 +60,7 @@ void SurfaceMeshRenderer::render(const RenderContext &context) {
     shader.bind();
 
     gpu_mesh.set_attributes(shader);
-    update_shader(shader, context);
+    update_shader(shader, material, context);
 
     gpu_mesh.draw();
 

@@ -9,25 +9,24 @@
 namespace OpenGP {
 //=============================================================================
 
-namespace {
+const char *Material::default_code() {
+    return R"GLSL(
 
-    inline const char *default_code() {
-        return R"GLSL(
+        uniform vec3 base_color;
 
-            vec4 shade() {
-                vec3 base_color = 0.6 * vec3(1,1,1);
-                float diffuse = clamp(abs(dot(get_normal(), normalize(vec3(1,1,1)))), 0, 1);
-                vec3 ambient = vec3(0.1,0.11,0.13);
+        vec4 shade() {
+            float diffuse = clamp(abs(dot(get_normal(), normalize(vec3(1,1,1)))), 0, 1);
+            vec3 ambient = vec3(0.1,0.11,0.13);
 
-                return vec4(diffuse * base_color + ambient, 1);
-            }
+            return vec4(diffuse * base_color + ambient, 1);
+        }
 
-        )GLSL";
-    }
-
+    )GLSL";
 }
 
-Material::Material() : Material(default_code()) {}
+Material::Material() : Material(default_code()) {
+    set_property("base_color", Vec3(0.6, 0.6, 0.6));
+}
 
 Material::Material(const std::string &code) {
     shading_code = code;
@@ -35,6 +34,12 @@ Material::Material(const std::string &code) {
 
 const std::string &Material::get_shading_code() const {
     return shading_code;
+}
+
+void Material::apply_properties(Shader &shader) const {
+    for (auto &pair : properties) {
+        pair.second(shader);
+    }
 }
 
 //=============================================================================

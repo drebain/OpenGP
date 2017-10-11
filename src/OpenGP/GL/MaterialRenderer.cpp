@@ -126,6 +126,15 @@ void MaterialRenderer::set_material(const Material &material) {
     this->material = material;
 }
 
+Material &MaterialRenderer::get_material() {
+    return material;
+}
+
+const Material &MaterialRenderer::get_material() const {
+    return material;
+}
+
+
 void MaterialRenderer::build_shader(Shader &shader, const Material &material, const std::string &vshader, const std::string &fshader) {
 
     shader.clear();
@@ -147,9 +156,13 @@ void MaterialRenderer::build_shader(Shader &shader, const Material &material, co
     shader.add_fshader_from_source(fshader_source.c_str());
     shader.link();
 
+    shader.bind();
+    material.apply_properties(shader);
+    shader.unbind();
+
 }
 
-void MaterialRenderer::update_shader(Shader &shader, const RenderContext &context) {
+void MaterialRenderer::update_shader(Shader &shader, const Material &material, const RenderContext &context) {
 
     shader.set_uniform("_uniform_aspect", context.aspect);
     shader.set_uniform("_uniform_vfov", context.vfov);
@@ -165,6 +178,8 @@ void MaterialRenderer::update_shader(Shader &shader, const RenderContext &contex
     shader.set_uniform("_uniform_VP", context.VP);
     shader.set_uniform("_uniform_MVP", context.MVP);
     shader.set_uniform("_uniform_wireframe", context.wireframe);
+
+    material.apply_properties(shader);
 
 }
 

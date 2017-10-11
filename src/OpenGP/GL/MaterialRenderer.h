@@ -104,9 +104,12 @@ public:
 
     HEADERONLY_INLINE void set_material(const Material &material);
 
+    HEADERONLY_INLINE Material &get_material();
+    HEADERONLY_INLINE const Material &get_material() const;
+
     HEADERONLY_INLINE static void build_shader(Shader &shader, const Material &material, const std::string &vshader, const std::string &fshader);
 
-    HEADERONLY_INLINE static void update_shader(Shader &shader, const RenderContext &context);
+    HEADERONLY_INLINE static void update_shader(Shader &shader, const Material &material, const RenderContext &context);
 
 };
 

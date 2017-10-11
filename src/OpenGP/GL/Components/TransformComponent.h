@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <OpenGP/types.h>
+#include <OpenGP/util/Transform.h>
 #include <OpenGP/GL/Entity.h>
 
 
@@ -12,24 +12,10 @@
 namespace OpenGP {
 //=============================================================================
 
-class TransformComponent : public Component {
+class TransformComponent : public Transform, public Component {
 public:
 
-    Vec3 position = Vec3::Zero();
-    Vec3 scale = Vec3::Ones();
-    Quaternion rotation = Quaternion::Identity();
-
-    Vec3 right() const {
-        return rotation * Vec3(1, 0, 0);
-    }
-
-    Vec3 up() const {
-        return rotation * Vec3(0, 1, 0);
-    }
-
-    Vec3 forward() const {
-        return rotation * Vec3(0, 0, 1);
-    }
+    
 
 };
 
