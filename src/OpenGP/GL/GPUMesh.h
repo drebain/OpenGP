@@ -4,6 +4,10 @@
 
 #pragma once
 
+#include <string>
+#include <vector>
+#include <unordered_map>
+
 #include <OpenGP/GL/gl.h>
 #include <OpenGP/GL/Shader.h>
 #include <OpenGP/GL/Buffer.h>
@@ -19,6 +23,8 @@ class GPUMesh {
 private:
 
     VertexArrayObject vao;
+
+    std::unordered_map<std::string, GenericBuffer> vbos;
 
     ArrayBuffer<Vec3> vpoint;
     ArrayBuffer<Vec3> vnormal;
@@ -47,21 +53,25 @@ public:
         vao.bind();
 
         auto vpoints = mesh.get_vertex_property<Vec3>("v:point");
-        vpoint.upload_raw(vpoints.data(), mesh.n_vertices());
+        //vpoint.upload_raw(vpoints.data(), mesh.n_vertices());
+        set_vbo_raw("vpoint", vpoints.data(), mesh.n_vertices());
 
         auto vnormals = mesh.get_vertex_property<Vec3>("v:normal");
         if (vnormals) {
-            vnormal.upload_raw(vnormals.data(), mesh.n_vertices());
+            //vnormal.upload_raw(vnormals.data(), mesh.n_vertices());
+            set_vbo_raw("vnormal", vnormals.data(), mesh.n_vertices());
         } else {
             void *uninitialized_data = malloc(mesh.n_vertices() * sizeof(Vec3));
-            vnormal.upload_raw(uninitialized_data, mesh.n_vertices());
+            //vnormal.upload_raw(uninitialized_data, mesh.n_vertices());
+            set_vbo_raw("vnormal", uninitialized_data, mesh.n_vertices());
             free(uninitialized_data);
         }
 
         // TODO: read texture coordinates
         {
             void *uninitialized_data = malloc(mesh.n_vertices() * sizeof(Vec2));
-            vtexcoord.upload_raw(uninitialized_data, mesh.n_vertices());
+            //vtexcoord.upload_raw(uninitialized_data, mesh.n_vertices());
+            set_vbo_raw("vtexcoord", uninitialized_data, mesh.n_vertices());
             free(uninitialized_data);
         }
 
@@ -85,22 +95,42 @@ public:
         this->mode = mode;
     }
 
-    void set_vpoint(const std::vector<Vec3> &vpoint) {
+    template <typename T>
+    void set_vbo(const std::string &name, const std::vector<T> &data) {
+        set_vbo_raw<T>(name, data.size(), &(data[0]));
+    }
+
+    template <typename T>
+    void set_vbo_raw(const std::string &name, const T *data, GLsizeiptr num_elems) {
+
+        auto *buffer = dynamic_cast<ArrayBuffer<T>*>(&(vbos[name]));
+
+        assert(buffer != nullptr);
         vao.bind();
-        this->vpoint.upload(vpoint);
+        buffer->upload_raw(vpoint);
         vao.unbind();
+
+    }
+
+    void set_vpoint(const std::vector<Vec3> &vpoint) {
+        //vao.bind();
+        //this->vpoint.upload(vpoint);
+        //vao.unbind();
+        set_vbo<Vec3>("vposition", vpoint);
     }
 
     void set_vnormal(const std::vector<Vec3> &vnormal) {
-        vao.bind();
-        this->vnormal.upload(vnormal);
-        vao.unbind();
+        //vao.bind();
+        //this->vnormal.upload(vnormal);
+        //vao.unbind();
+        set_vbo<Vec3>("vnormal", vnormal);
     }
 
     void set_vnormal(const std::vector<Vec2> &vtexcoord) {
-        vao.bind();
-        this->vtexcoord.upload(vtexcoord);
-        vao.unbind();
+        //vao.bind();
+        //this->vtexcoord.upload(vtexcoord);
+        //vao.unbind();
+        set_vbo<Vec2>("vtexcoord", vtexcoord);
     }
 
     void set_triangles(const std::vector<unsigned int> &triangles) {
@@ -114,7 +144,7 @@ public:
 
         vao.bind();
 
-        if (shader.has_attribute("vposition")) {
+        /*if (shader.has_attribute("vposition")) {
             shader.set_attribute("vposition", vpoint);
         }
 
@@ -124,6 +154,11 @@ public:
 
         if (shader.has_attribute("vtexcoord")) {
             shader.set_attribute("vtexcoord", vtexcoord);
+        }*/
+        for (auto &pair : vbos) {
+            std::string &name = pair.first;
+            GenericBuffer &buffer = pair.second;
+            shader.set_attribute(name, buffer);
         }
 
         vao.unbind();

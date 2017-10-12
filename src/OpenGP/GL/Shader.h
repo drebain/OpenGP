@@ -3,6 +3,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #pragma once
+
+#include <string>
+#include <unordered_map>
+
 #include <Eigen/Dense>
 #include <OpenGP/GL/gl.h>
 #include <OpenGP/headeronly.h>
@@ -29,6 +33,8 @@ class Shader{
 private:
     GLuint pid = 0; ///< 0: invalid
     bool _is_valid = false;
+    std::unordered_map<std::string, GLuint> attributes;
+    std::unordered_map<std::string, GLuint> uniforms;
 public:
     bool verbose = false; ///< prints messages
 /// @}
@@ -94,16 +100,18 @@ public:
     HEADERONLY_INLINE void get_uniform(const char* name, Eigen::Matrix4f& matrix);
 /// @}
 
+    HEADERONLY_INLINE bool has_uniform(const char* name) const;
+
 /// @{ setters for *constant* vertex attributes
 public:
     HEADERONLY_INLINE void set_attribute(const char* name, float value);
     HEADERONLY_INLINE void set_attribute(const char* name, const Eigen::Vector3f& vector);
-    HEADERONLY_INLINE void set_attribute(const char* name, ArrayBuffer<float>& buffer);
-    HEADERONLY_INLINE void set_attribute(const char* name, ArrayBuffer<Eigen::Vector2f>& buffer);
-    HEADERONLY_INLINE void set_attribute(const char* name, ArrayBuffer<Eigen::Vector3f>& buffer);
+    HEADERONLY_INLINE void set_attribute(const char* name, ArrayBuffer<float>& buffer, GLuint divisor = 0);
+    HEADERONLY_INLINE void set_attribute(const char* name, ArrayBuffer<Eigen::Vector2f>& buffer, GLuint divisor = 0);
+    HEADERONLY_INLINE void set_attribute(const char* name, ArrayBuffer<Eigen::Vector3f>& buffer, GLuint divisor = 0);
 /// @}
 
-    HEADERONLY_INLINE bool has_attribute(const char* name);
+    HEADERONLY_INLINE bool has_attribute(const char* name) const;
 
 };
 

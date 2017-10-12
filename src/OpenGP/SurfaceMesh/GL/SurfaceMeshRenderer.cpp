@@ -64,7 +64,7 @@ const char *SurfaceMeshRenderer::fshader() {
 
         in vec3 fnormal;
         in vec3 fposition;
-        in vec3 fwireframe;
+        noperspective in vec3 fwireframe;
 
         // http://codeflow.org/entries/2012/aug/02/easy-wireframe-display-with-barycentric-coordinates
         float edgeFactor(){

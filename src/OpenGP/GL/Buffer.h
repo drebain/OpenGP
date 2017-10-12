@@ -10,38 +10,53 @@
 namespace OpenGP {
 //=============================================================================
 
-template <GLenum TARGET, class T>
-class Buffer{
-private:
-    GLuint     _buffer =0;     ///< 0: invalid
-    GLsizeiptr _num_elems = 0; ///< # of uploaded elements
-    const GLsizeiptr _elem_size; ///< size of a single elements (bytes)
+class GenericBuffer {
+protected:
+
+    GLenum target;
+    GLuint buffer = 0;     ///< 0: invalid
+    GLsizeiptr num_elems = 0; ///< # of uploaded elements
+    GLsizeiptr elem_size; ///< size of a single elements (bytes)
 
 public:
 
-    Buffer() : _elem_size(sizeof(T)){
-        glGenBuffers(1, &_buffer);
+    virtual ~GenericBuffer() {}
+
+    void bind() { glBindBuffer(target, buffer); }
+    void unbind() { glBindBuffer(target, 0); }
+    GLsizeiptr size() const { return num_elems; }
+
+    GLenum get_target() const { return target; }
+    GLenum get_data_type() const {}
+    GLuint get_components() const {}
+
+};
+
+template <GLenum TARGET, class T>
+class Buffer : public GenericBuffer {
+public:
+
+    Buffer() {
+        elem_size = sizeof(T);
+        target = TARGET;
+        glGenBuffers(1, &buffer);
     }
 
     Buffer(const Buffer&) = delete;
     Buffer &operator=(const Buffer&) = delete;
 
-    ~Buffer(){ glDeleteBuffers(1, &_buffer); }
-
-    void bind(){ glBindBuffer(TARGET, _buffer); }
-    void unbind(){ glBindBuffer(TARGET, 0); }
-    GLsizeiptr size() const{ return _num_elems; }
+    ~Buffer(){ glDeleteBuffers(1, &buffer); }
 
     void upload(const std::vector<T>& data, GLenum usage=GL_STATIC_DRAW){
-        this->_num_elems = data.size();
-        upload_raw(data.data(), _num_elems, usage);
+        this->num_elems = data.size();
+        upload_raw(data.data(), num_elems, usage);
     }
 
     /// @note use the other upload functions whenever possible
     void upload_raw(const GLvoid* raw_data_ptr, GLsizeiptr num_elems, GLenum usage=GL_STATIC_DRAW){
-        this->_num_elems = num_elems;
-        glBindBuffer(TARGET, _buffer);
-        glBufferData(TARGET, num_elems*_elem_size, raw_data_ptr, usage);
+        this->num_elems = num_elems;
+        glBindBuffer(TARGET, buffer);
+        glBufferData(TARGET, num_elems * elem_size, raw_data_ptr, usage);
     }
 };
 
