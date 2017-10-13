@@ -27,4 +27,5 @@ add_subdirectory(apps/imguitest)
 add_subdirectory(apps/subdivision)
 add_subdirectory(apps/isoremesh)
 add_subdirectory(apps/overhaul_test)
+add_subdirectory(apps/synth_depthmaps)
 #add_subdirectory(apps/qglviewer) # UNSTABLE / OBSOLETE
