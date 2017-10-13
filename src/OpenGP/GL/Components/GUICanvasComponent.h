@@ -13,7 +13,11 @@
 namespace OpenGP {
 //=============================================================================
 
-class GUICanvasComponent : public Component {
+struct GUIElementDrawEvent {
+    CameraComponent &camera;
+};
+
+class GUICanvasComponent : public Component, public EventProvider {
 private:
 
     EventSentinel sentinel;
@@ -61,6 +65,10 @@ public:
             if (action)
                 action();
 
+            GUIElementDrawEvent draw_event = { cam };
+
+            send_event(draw_event);
+
             renderer.end_frame();
 
             if (io.WantCaptureMouse) {
@@ -84,6 +92,7 @@ public:
 
     }
 
+    // DEPRECATED: use add_listener instead
     void set_action(std::function<void()> action) {
         this->action = action;
     }

@@ -22,12 +22,33 @@ public:
         return rotation * Vec3(1, 0, 0);
     }
 
+    void set_right(Vec3 right) {
+        right.normalize();
+        Vec3 axis = this->right().cross(right);
+        float angle = axis.norm();
+        rotation = rotation * Quaternion(Eigen::AngleAxisf(std::asin(angle), axis / angle));
+    }
+
     Vec3 up() const {
         return rotation * Vec3(0, 1, 0);
     }
 
+    void set_up(Vec3 up) {
+        up.normalize();
+        Vec3 axis = this->up().cross(up);
+        float angle = axis.norm();
+        rotation = rotation * Quaternion(Eigen::AngleAxisf(std::asin(angle), axis / angle));
+    }
+
     Vec3 forward() const {
         return rotation * Vec3(0, 0, 1);
+    }
+
+    void set_forward(Vec3 forward) {
+        forward.normalize();
+        Vec3 axis = this->forward().cross(forward);
+        float angle = axis.norm();
+        rotation = rotation * Quaternion(Eigen::AngleAxisf(std::asin(angle), axis / angle));
     }
 
     Mat4x4 get_matrix() const {
@@ -49,7 +70,7 @@ public:
 
     }
 
-    void set_matrix(const Mat4x4 &mat) {
+    void set_transformation(const Mat4x4 &mat) {
 
         Mat4x4 lmat = mat;
         position = lmat.block<3, 1>(0, 3);
@@ -65,6 +86,32 @@ public:
         lmat.block<3, 1>(0, 2) /= scale(2);
 
         rotation = Quaternion(lmat.block<3, 3>(0, 0));
+
+    }
+
+    void set_translation(const Mat4x4 &mat) {
+        position = mat.block<3, 1>(0, 3);
+    }
+
+    void set_rotation(const Mat4x4 &mat) {
+
+        Mat4x4 lmat = mat;
+
+        lmat.block<3, 1>(0, 0).normalize();
+        lmat.block<3, 1>(0, 1).normalize();
+        lmat.block<3, 1>(0, 2).normalize();
+
+        rotation = Quaternion(lmat.block<3, 3>(0, 0));
+
+    }
+
+    void set_scale(const Mat4x4 &mat) {
+
+        scale = Vec3(
+            mat.block<3, 1>(0, 0).norm(),
+            mat.block<3, 1>(0, 1).norm(),
+            mat.block<3, 1>(0, 2).norm()
+        );
 
     }
 

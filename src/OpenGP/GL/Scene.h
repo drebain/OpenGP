@@ -24,7 +24,7 @@ public:
 
     Scene() {}
 
-    Entity &create_entity();
+    HEADERONLY_INLINE Entity &create_entity();
 
     template <typename T>
     T &create_entity_with() {

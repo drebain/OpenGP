@@ -83,6 +83,12 @@ struct RenderContext {
 
 };
 
+enum class WireframeMode {
+    None,
+    Overlay,
+    WiresOnly
+};
+
 class MaterialRenderer {
 protected:
 
@@ -94,7 +100,7 @@ protected:
 
 public:
 
-    bool wireframe = false;
+    WireframeMode wireframe_mode = WireframeMode::None;
     Vec3 wirecolor = Vec3(0, 0, 0);
 
     MaterialRenderer() {}

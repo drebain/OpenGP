@@ -209,7 +209,7 @@ void MaterialRenderer::update_shader(Shader &shader, const RenderContext &contex
     shader.set_uniform("_uniform_VP", context.VP);
     shader.set_uniform("_uniform_MVP", context.MVP);
 
-    shader.set_uniform("_uniform_wireframe", wireframe);
+    shader.set_uniform("_uniform_wireframe", wireframe_mode != WireframeMode::None);
     shader.set_uniform("_uniform_wirecolor", wirecolor);
 
     material.apply_properties(shader);

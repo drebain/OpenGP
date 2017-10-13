@@ -93,7 +93,13 @@ void SurfaceMeshRenderer::render(const RenderContext &context) {
     gpu_mesh.set_attributes(shader);
     update_shader(shader, context);
 
+    if (wireframe_mode == WireframeMode::WiresOnly)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
     gpu_mesh.draw();
+
+    if (wireframe_mode == WireframeMode::WiresOnly)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     shader.unbind();
 }
