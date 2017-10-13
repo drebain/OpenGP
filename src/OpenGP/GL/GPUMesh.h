@@ -115,7 +115,7 @@ public:
         set_vbo<Vec3>("vnormal", vnormal);
     }
 
-    void set_vnormal(const std::vector<Vec2> &vtexcoord) {
+    void set_vtexcoord(const std::vector<Vec2> &vtexcoord) {
         set_vbo<Vec2>("vtexcoord", vtexcoord);
     }
 
