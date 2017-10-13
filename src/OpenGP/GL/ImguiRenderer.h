@@ -60,7 +60,7 @@ private:
 
     VertexArrayObject vao;
 
-    ArrayBuffer<ImDrawVert> vbuffer;
+    GenericArrayBuffer vbuffer;
 
     ElementArrayBuffer<ImDrawIdx> elements;
 
@@ -180,7 +180,7 @@ public:
             const ImDrawIdx *idx_buffer_offset = 0;
 
             vbuffer.bind();
-            vbuffer.upload_raw(cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size, GL_STREAM_DRAW);
+            vbuffer.upload_raw_block(cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert), GL_STREAM_DRAW);
 
             elements.bind();
             elements.upload_raw(cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size, GL_STREAM_DRAW);

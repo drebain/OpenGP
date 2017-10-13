@@ -4,63 +4,105 @@
 
 #pragma once
 #include <OpenGP/GL/gl.h>
+#include <OpenGP/GL/gl_types.h>
+#include <OpenGP/util/math_types.h>
 #include <vector>
 
 //=============================================================================
 namespace OpenGP {
 //=============================================================================
 
+template <GLenum TARGET>
 class GenericBuffer {
 protected:
 
-    GLenum target;
     GLuint buffer = 0;     ///< 0: invalid
-    GLsizeiptr num_elems = 0; ///< # of uploaded elements
-    GLsizeiptr elem_size; ///< size of a single elements (bytes)
 
 public:
 
-    virtual ~GenericBuffer() {}
+    static constexpr GLenum target = TARGET;
 
-    void bind() { glBindBuffer(target, buffer); }
-    void unbind() { glBindBuffer(target, 0); }
+    GenericBuffer() {
+        glGenBuffers(1, &buffer);
+    }
+
+    virtual ~GenericBuffer(){ glDeleteBuffers(1, &buffer); }
+
+    void bind() { glBindBuffer(TARGET, buffer); }
+    void unbind() { glBindBuffer(TARGET, 0); }
+
+    /// @note use the other upload functions whenever possible
+    virtual void upload_raw_block(const GLvoid* raw_data_ptr, GLsizeiptr block_size, GLenum usage=GL_STATIC_DRAW){
+        glBindBuffer(TARGET, buffer);
+        glBufferData(TARGET, block_size, raw_data_ptr, usage);
+    }
+
+};
+
+template <GLenum TARGET>
+class VectorBuffer : public GenericBuffer<TARGET> {
+protected:
+
+    GLsizeiptr num_elems = 0; ///< # of uploaded elements
+
+public:
+
+    VectorBuffer() = default;
+
+    virtual ~VectorBuffer() {}
+
     GLsizeiptr size() const { return num_elems; }
+    virtual GLsizeiptr elem_size() const = 0;
+    virtual GLenum get_data_type() const = 0;
+    virtual GLuint get_components() const = 0;
 
-    GLenum get_target() const { return target; }
-    GLenum get_data_type() const {}
-    GLuint get_components() const {}
+    /// @note use the other upload functions whenever possible
+    void upload_raw_block(const GLvoid* raw_data_ptr, GLsizeiptr block_size, GLenum usage=GL_STATIC_DRAW){
+        num_elems = block_size / elem_size();
+        glBindBuffer(TARGET, this->buffer);
+        glBufferData(TARGET, block_size, raw_data_ptr, usage);
+    }
 
 };
 
 template <GLenum TARGET, class T>
-class Buffer : public GenericBuffer {
+class Buffer : public VectorBuffer<TARGET> {
 public:
 
-    Buffer() {
-        elem_size = sizeof(T);
-        target = TARGET;
-        glGenBuffers(1, &buffer);
-    }
+    using Scalar = UnderlyingScalar<T>;
+
+    Buffer() = default;
 
     Buffer(const Buffer&) = delete;
     Buffer &operator=(const Buffer&) = delete;
 
-    ~Buffer(){ glDeleteBuffers(1, &buffer); }
-
     void upload(const std::vector<T>& data, GLenum usage=GL_STATIC_DRAW){
         this->num_elems = data.size();
-        upload_raw(data.data(), num_elems, usage);
+        upload_raw(data.data(), this->num_elems, usage);
     }
 
     /// @note use the other upload functions whenever possible
     void upload_raw(const GLvoid* raw_data_ptr, GLsizeiptr num_elems, GLenum usage=GL_STATIC_DRAW){
         this->num_elems = num_elems;
-        glBindBuffer(TARGET, buffer);
-        glBufferData(TARGET, num_elems * elem_size, raw_data_ptr, usage);
+        glBindBuffer(TARGET, this->buffer);
+        glBufferData(TARGET, this->num_elems * sizeof(T), raw_data_ptr, usage);
     }
+
+    GLsizeiptr elem_size() const { return sizeof(T); }
+    GLenum get_data_type() const { return GLType<Scalar>(); }
+    GLuint get_components() const { return ScalarComponents<T>(); }
+
 };
 
 ///--- Specializations
+
+using GenericArrayBuffer = GenericBuffer<GL_ARRAY_BUFFER>;
+
+using GenericElementArrayBuffer = GenericBuffer<GL_ELEMENT_ARRAY_BUFFER>;
+
+using VectorArrayBuffer = VectorBuffer<GL_ARRAY_BUFFER>;
+
+using VectorElementArrayBuffer = VectorBuffer<GL_ELEMENT_ARRAY_BUFFER>;
 
 template <class T>
 using ArrayBuffer = Buffer<GL_ARRAY_BUFFER, T>;

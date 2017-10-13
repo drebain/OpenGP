@@ -109,6 +109,7 @@ public:
     HEADERONLY_INLINE void set_attribute(const char* name, ArrayBuffer<float>& buffer, GLuint divisor = 0);
     HEADERONLY_INLINE void set_attribute(const char* name, ArrayBuffer<Eigen::Vector2f>& buffer, GLuint divisor = 0);
     HEADERONLY_INLINE void set_attribute(const char* name, ArrayBuffer<Eigen::Vector3f>& buffer, GLuint divisor = 0);
+    HEADERONLY_INLINE void set_attribute(const char* name, VectorArrayBuffer& buffer, GLuint divisor = 0);
 /// @}
 
     HEADERONLY_INLINE bool has_attribute(const char* name) const;

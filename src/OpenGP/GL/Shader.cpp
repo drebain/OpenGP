@@ -114,9 +114,8 @@ void OpenGP::Shader::set_attribute(const char* name, ArrayBuffer<Eigen::Vector3f
     glVertexAttribDivisor(location, divisor);
 }
 
-void OpenGP::Shader::set_attribute(const char* name, GenericBuffer &buffer, GLuint divisor) {
+void OpenGP::Shader::set_attribute(const char* name, VectorArrayBuffer &buffer, GLuint divisor) {
     assert( check_is_current() );
-    assert(buffer.get_target() == GL_ARRAY_BUFFER);
     if (!has_attribute(name)) return;
     GLint location = attributes.at(std::string(name));
     glEnableVertexAttribArray(location); ///< cached in VAO

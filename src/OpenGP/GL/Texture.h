@@ -7,6 +7,7 @@
 #include <type_traits>
 
 #include <OpenGP/GL/gl.h>
+#include <OpenGP/GL/gl_types.h>
 #include <OpenGP/Image/ImageType.h>
 
 //=============================================================================
@@ -41,69 +42,11 @@ struct ColorFormatBuilder<4> {
     static constexpr GLenum format = GL_RGBA;
 };
 
-template <typename Scalar, typename=void>
-struct ColorTypeBuilder {
-    static_assert(sizeof(Scalar)!=sizeof(Scalar), "Invalid texture scalar type");
-};
-
-template <>
-struct ColorTypeBuilder<float> {
-    static constexpr GLenum type = GL_FLOAT;
-};
-
-template <typename Scalar>
-struct ColorTypeBuilder<Scalar, typename std::enable_if<
-    std::is_integral<Scalar>::value &&
-    std::is_unsigned<Scalar>::value &&
-    sizeof(Scalar) == 1>::type> {
-    static constexpr GLenum type = GL_UNSIGNED_BYTE;
-};
-
-template <typename Scalar>
-struct ColorTypeBuilder<Scalar, typename std::enable_if<
-    std::is_integral<Scalar>::value &&
-    std::is_signed<Scalar>::value &&
-    sizeof(Scalar) == 1>::type> {
-    static constexpr GLenum type = GL_BYTE;
-};
-
-template <typename Scalar>
-struct ColorTypeBuilder<Scalar, typename std::enable_if<
-    std::is_integral<Scalar>::value &&
-    std::is_unsigned<Scalar>::value &&
-    sizeof(Scalar) == 2>::type> {
-    static constexpr GLenum type = GL_UNSIGNED_SHORT;
-};
-
-template <typename Scalar>
-struct ColorTypeBuilder<Scalar, typename std::enable_if<
-    std::is_integral<Scalar>::value &&
-    std::is_signed<Scalar>::value &&
-    sizeof(Scalar) == 2>::type> {
-    static constexpr GLenum type = GL_SHORT;
-};
-
-template <typename Scalar>
-struct ColorTypeBuilder<Scalar, typename std::enable_if<
-    std::is_integral<Scalar>::value &&
-    std::is_unsigned<Scalar>::value &&
-    sizeof(Scalar) == 4>::type> {
-    static constexpr GLenum type = GL_UNSIGNED_INT;
-};
-
-template <typename Scalar>
-struct ColorTypeBuilder<Scalar, typename std::enable_if<
-    std::is_integral<Scalar>::value &&
-    std::is_signed<Scalar>::value &&
-    sizeof(Scalar) == 4>::type> {
-    static constexpr GLenum type = GL_INT;
-};
-
 template <typename ImageType>
 struct TextureTypeBuilder {
     using Scalar = typename ImageTypeInfo<ImageType>::Scalar;
     static constexpr int components = ImageTypeInfo<ImageType>::component_count;
-    using Type = Texture<ColorFormatBuilder<components>::format, ColorFormatBuilder<components>::format, ColorTypeBuilder<Scalar>::type>;
+    using Type = Texture<ColorFormatBuilder<components>::format, ColorFormatBuilder<components>::format, GLType<Scalar>()>;
 };
 
 
