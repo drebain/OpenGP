@@ -22,8 +22,8 @@ matrix:
      - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
 before_install:
   - eval "${MATRIX_EVAL}"
-  - cd $HOME && git clone https://github.com/glfw/glfw && mkdir glfw/build && cd glfw/build && cmake .. && make -j4 && sudo make install
   - sudo apt-get update -qq
-  - sudo apt-get install -qq libeigen3-dev libpng-dev
+  - sudo apt-get install -qq libxrandr-dev libeigen3-dev libpng-dev
+  - cd $HOME && git clone https://github.com/glfw/glfw && mkdir glfw/build && cd glfw/build && cmake .. && make -j4 && sudo make install
 notifications:
   email: true
