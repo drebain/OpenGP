@@ -14,6 +14,10 @@ namespace OpenGP {
 //=============================================================================
 
 class GizmoComponent : public Component {
+private:
+
+    Mat4x4 matrix;
+
 public:
 
     ImGuizmo::OPERATION operation = ImGuizmo::ROTATE;
@@ -23,6 +27,12 @@ public:
         transform.scale = Vec3(0.1, 0.1, 0.2);
     }
 
+    void update() {
+        if (!ImGuizmo::IsUsing()) {
+            matrix = get<TransformComponent>().get_matrix();
+        }
+    }
+
     void on_gui(const GUIElementDrawEvent &event) {
 
         auto &transform = get<TransformComponent>();
@@ -30,13 +40,14 @@ public:
         Mat4x4 proj = event.camera.get_projection();
         Mat4x4 view = event.camera.get_view();
         Mat4x4 model = transform.get_matrix();
+        Mat4x4 dmodel = Mat4x4::Zero();
 
-        ImGuizmo::Manipulate(view.data(), proj.data(), operation, ImGuizmo::LOCAL, model.data());
+        ImGuizmo::Manipulate(view.data(), proj.data(), operation, ImGuizmo::LOCAL, model.data(), dmodel.data());
 
         switch(operation) {
-            case ImGuizmo::TRANSLATE: transform.set_translation(model); break;
-            case ImGuizmo::ROTATE:    transform.set_rotation(model); break;
-            case ImGuizmo::SCALE:     transform.set_scale(model); break;
+            case ImGuizmo::TRANSLATE: transform.set_translation_matrix(dmodel * model); break;
+            case ImGuizmo::ROTATE:    transform.set_rotation_matrix(dmodel * model); break;
+            case ImGuizmo::SCALE:     transform.set_scale_matrix(dmodel * model); break;
         }
 
 

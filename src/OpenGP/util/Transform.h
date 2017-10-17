@@ -70,12 +70,86 @@ public:
 
     }
 
-    void set_transformation(const Mat4x4 &mat) {
+    void set_transformation_matrix(const Mat4x4 &mat) {
+        auto t = decompose_matrix(mat);
+        position = t.position;
+        rotation = t.rotation;
+        scale = t.scale;
+    }
 
+    void set_transformation(const Transform &t) {
+        position = t.position;
+        rotation = t.rotation;
+        scale = t.scale;
+    }
+
+    void apply_transformation_matrix(const Mat4x4 &mat) {
+        auto t = decompose_matrix(mat);
+        apply_transformation(t);
+    }
+
+    void apply_transformation(const Transform &t) {
+        apply_translation(t.position);
+        apply_rotation(t.rotation);
+        apply_scale(t.scale);
+    }
+
+
+    void set_translation_matrix(const Mat4x4 &mat) {
+        position = decompose_matrix_translation(mat);
+    }
+
+    void set_translation(const Vec3 &v) {
+        position = v;
+    }
+
+    void apply_translation_matrix(const Mat4x4 &mat) {
+        apply_translation(decompose_matrix_translation(mat));
+    }
+
+    void apply_translation(const Vec3 &v) {
+        position += v;
+    }
+
+
+    void set_rotation_matrix(const Mat4x4 &mat) {
+        rotation = decompose_matrix_rotation(mat);
+    }
+
+    void apply_rotation_matrix(const Mat4x4 &mat) {
+        apply_rotation(decompose_matrix_rotation(mat));
+    }
+
+    void apply_rotation(const Quaternion &q) {
+        rotation *= q;
+    }
+
+
+    void set_scale_matrix(const Mat4x4 &mat) {
+        scale = decompose_matrix_scale(mat);
+    }
+
+    void set_scale(const Vec3 &v) {
+        scale = v;
+    }
+
+    void apply_scale_matrix(const Mat4x4 &mat) {
+        apply_scale(decompose_matrix_scale(mat));
+    }
+
+    void apply_scale(const Vec3 &v) {
+        scale[0] *= v[0];
+        scale[1] *= v[1];
+        scale[2] *= v[2];
+    }
+
+    static Vec3 decompose_matrix_translation(const Mat4x4 &mat) {
+        return mat.block<3, 1>(0, 3);
+    }
+
+    static Quaternion decompose_matrix_rotation(const Mat4x4 &mat) {
         Mat4x4 lmat = mat;
-        position = lmat.block<3, 1>(0, 3);
-
-        scale = Vec3(
+        Vec3 scale = Vec3(
             lmat.block<3, 1>(0, 0).norm(),
             lmat.block<3, 1>(0, 1).norm(),
             lmat.block<3, 1>(0, 2).norm()
@@ -85,34 +159,36 @@ public:
         lmat.block<3, 1>(0, 1) /= scale(1);
         lmat.block<3, 1>(0, 2) /= scale(2);
 
-        rotation = Quaternion(lmat.block<3, 3>(0, 0));
-
+        return Quaternion(lmat.block<3, 3>(0, 0));
     }
 
-    void set_translation(const Mat4x4 &mat) {
-        position = mat.block<3, 1>(0, 3);
-    }
-
-    void set_rotation(const Mat4x4 &mat) {
-
-        Mat4x4 lmat = mat;
-
-        lmat.block<3, 1>(0, 0).normalize();
-        lmat.block<3, 1>(0, 1).normalize();
-        lmat.block<3, 1>(0, 2).normalize();
-
-        rotation = Quaternion(lmat.block<3, 3>(0, 0));
-
-    }
-
-    void set_scale(const Mat4x4 &mat) {
-
-        scale = Vec3(
+    static Vec3 decompose_matrix_scale(const Mat4x4 &mat) {
+        return Vec3(
             mat.block<3, 1>(0, 0).norm(),
             mat.block<3, 1>(0, 1).norm(),
             mat.block<3, 1>(0, 2).norm()
         );
+    }
 
+    static Transform decompose_matrix(const Mat4x4 &mat) {
+        Transform t;
+
+        Mat4x4 lmat = mat;
+        t.position = lmat.block<3, 1>(0, 3);
+
+        t.scale = Vec3(
+            lmat.block<3, 1>(0, 0).norm(),
+            lmat.block<3, 1>(0, 1).norm(),
+            lmat.block<3, 1>(0, 2).norm()
+        );
+
+        lmat.block<3, 1>(0, 0) /= t.scale(0);
+        lmat.block<3, 1>(0, 1) /= t.scale(1);
+        lmat.block<3, 1>(0, 2) /= t.scale(2);
+
+        t.rotation = Quaternion(lmat.block<3, 3>(0, 0));
+
+        return t;
     }
 
 };
