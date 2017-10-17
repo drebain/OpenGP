@@ -229,12 +229,19 @@ public:
         fprops.free_memory();
     }
 
-    void reserve(int nv, int ns, int ne, int nf) {
-        vprops.reserve(nv);
-        sprops.reserve(ns);
-        eprops.reserve(ne);
-        fprops.reserve(nf);
-    }
+	void reserve(int nv, int ns, int ne, int nf) {
+		vprops.reserve(nv);
+		sprops.reserve(ns);
+		eprops.reserve(ne);
+		fprops.reserve(nf);
+	}
+
+	Vertex add_vertex(Vec3 pos, float rad) {
+		Point p;
+		p.head<3>() = pos;
+		p.w() = rad;
+		return add_vertex(p);
+	}
 
     Vertex add_vertex(Point vertex) {
         vprops.push_back();

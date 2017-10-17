@@ -69,7 +69,7 @@ public:
 
     template <typename EventType, typename ListenerType>
     ListenerHandle add_listener(ListenerType listener) {
-        add_listener<EventType>(listener, own_sentinel);
+        return add_listener<EventType>(listener, own_sentinel);
     }
 
     template <typename EventType, typename ListenerType>
