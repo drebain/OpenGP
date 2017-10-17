@@ -13,6 +13,7 @@
 #include <OpenGP/GL/Components/TrackballComponent.h>
 #include <OpenGP/GL/Components/GUICanvasComponent.h>
 #include <OpenGP/GL/Components/GizmoComponent.h>
+#include <OpenGP/GL/Components/DepthRenderComponent.h>
 
 //=============================================================================
 namespace OpenGP {
@@ -22,15 +23,18 @@ class DepthSensorComponent : public Component {
 private:
 
     std::unique_ptr<SyntheticDepthmap> depthmap;
+    std::unique_ptr<Framebuffer> color;
+    std::unique_ptr<RGB8Texture> color_texture;
 
     FullscreenQuad fsq;
 
-    R32FTexture test_texture;
-
 public:
+
+    int width = 512, height = 512;
 
     void init() {
         require<GizmoComponent>();
+        require<CameraComponent>();
         auto &renderer = require<WorldRenderComponent>().set_renderer<SurfaceMeshRenderer>();
         GPUMesh &mesh = renderer.get_gpu_mesh();
 
@@ -55,15 +59,67 @@ public:
         renderer.wirecolor = Vec3(1, 1, 1);
         renderer.wireframe_mode = WireframeMode::WiresOnly;
 
-        depthmap = std::unique_ptr<SyntheticDepthmap>(new SyntheticDepthmap(512, 512));
+        init_framebuffers();
 
-        test_texture.allocate(10, 10);
-        Image<float> i = Image<float>::Random(10, 10);
-        test_texture.upload(i);
+    }
+
+    void init_framebuffers() {
+        depthmap.reset();
+        depthmap = std::unique_ptr<SyntheticDepthmap>(new SyntheticDepthmap(width, height));
+
+        color_texture.reset();
+        color_texture = std::unique_ptr<RGB8Texture>(new RGB8Texture());
+        color_texture->allocate(width, height);
+
+        color.reset();
+        color = std::unique_ptr<Framebuffer>(new Framebuffer());
+        color->attach_color_texture(*color_texture);
+        color->attach_depth_texture(depthmap->get_depth_texture());
+    }
+
+    void update() {
+
+        auto &transform = get<TransformComponent>();
+        auto &camera = get<CameraComponent>();
+
+        float aspect = (float)width / (float)height;
+        float y = std::tan(camera.vfov * M_PI / 360);
+        transform.set_scale(0.2 * Vec3(y * aspect, y, 1));
+
+        depthmap->clear();
+
+        Vec3 target = transform.position + transform.forward();
+        Mat4x4 view = camera.get_view();
+        Mat4x4 projection = camera.get_projection(width, height);
+
+        for (auto &drc : get_scene().all_of_type<DepthRenderComponent>()) {
+
+            auto &renderer = drc.get_renderer();
+
+            Mat4x4 model = drc.get<TransformComponent>().get_transformation_matrix();
+
+            depthmap->render(renderer, model, view, projection);
+
+        }
+
+        color->bind();
+
+        get<CameraComponent>().draw(width, height);
+
+        color->unbind();
+
     }
 
     void draw_depthmap() {
-        fsq.draw_texture(test_texture);
+
+        fsq.draw_texture(depthmap->get_texture());
+
+    }
+
+    void draw_color() {
+
+        fsq.draw_texture(*color_texture);
+
     }
 
 };
@@ -87,6 +143,8 @@ protected:
 
 public:
 
+    bool display_color = false;
+
     VirtualDepthSensor() {
 
         app.set_update_callback([&](){ scene.update(); });
@@ -104,14 +162,23 @@ public:
             main_camera->draw();
         });
         scene_window->add_listener<WindowCloseEvent>([&](const WindowCloseEvent &){ app.close(); });
+        scene_window->set_title("Scene");
 
         main_camera->set_window(*scene_window);
         canvas->set_camera(*main_camera);
 
         depthmap_window = &app.create_window([&](Window &window){
-            sensor->draw_depthmap();
+            if (display_color) {
+                sensor->draw_color();
+            } else {
+                sensor->draw_depthmap();
+            }
         });
         depthmap_window->add_listener<WindowCloseEvent>([&](const WindowCloseEvent &){ app.close(); });
+        depthmap_window->add_listener<KeyEvent>([this](const KeyEvent &e){
+            if (e.key == GLFW_KEY_C && e.released) display_color = !display_color;
+        });
+        depthmap_window->set_title("Sensor Output");
 
     }
 

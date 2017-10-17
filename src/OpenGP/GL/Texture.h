@@ -57,6 +57,8 @@ protected:
 
     GLenum internal_format, format, type;
 
+    GLuint width = -1, height = -1;
+
 public:
 
     GenericTexture() {
@@ -105,6 +107,14 @@ public:
     GLenum get_format() const { return format; }
     GLenum get_type() const { return type; }
 
+    GLuint get_width() const {
+        return width;
+    }
+
+    GLuint get_height() const {
+        return height;
+    }
+
 };
 
 template <GLenum INTERNAL_FORMAT, GLenum FORMAT, GLenum TYPE>
@@ -123,6 +133,9 @@ public:
 
     void allocate(GLsizei width, GLsizei height) {
 
+        this->width = width;
+        this->height = height;
+
         bind();
 
         glTexImage2D(GL_TEXTURE_2D, 0, INTERNAL_FORMAT, width, height, 0, FORMAT, TYPE, nullptr);
@@ -137,11 +150,17 @@ public:
         using InputType = typename TextureTypeBuilder<ImageType>::Type;
         static_assert(Type == InputType::Type && Format == InputType::Format, "Incompatible Image and texture types");
 
+        this->width = image.cols();
+        this->height = image.rows();
+
         upload_raw(image.cols(), image.rows(), image.data());
 
     }
 
     void upload_raw(GLsizei width, GLsizei height, const void *data) {
+
+        this->width = width;
+        this->height = height;
 
         bind();
 

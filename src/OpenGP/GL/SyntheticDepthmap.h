@@ -94,6 +94,12 @@ public:
 
     }
 
+    D16Texture &get_depth_texture() {
+
+        return depth;
+        
+    }
+
     const float *cpu_data() const { return data; }
 
 };

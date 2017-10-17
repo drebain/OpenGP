@@ -1,5 +1,7 @@
 #include <OpenGP/AppTemplates/VirtualDepthSensor.h>
 
+#include <OpenGP/SurfaceMesh/GL/SurfaceMeshDepthmapRenderer.h>
+
 #define OPENGP_IMPLEMENT_ALL_IN_THIS_FILE
 #include <OpenGP/util/implementations.h>
 
@@ -22,6 +24,8 @@ public:
         auto &bunny = scene.create_entity_with<WorldRenderComponent>();
         auto &renderer = bunny.set_renderer<SurfaceMeshRenderer>();
         renderer.upload_mesh(mesh);
+        auto &depth_renderer = bunny.require<DepthRenderComponent>().set_renderer<SurfaceMeshDepthmapRenderer>();
+        depth_renderer.upload_mesh(mesh);
 
         bunny.get<TransformComponent>().position = Vec3(0, 0, 0);
         main_camera->get<TransformComponent>().position = Vec3(1, 1, 1);

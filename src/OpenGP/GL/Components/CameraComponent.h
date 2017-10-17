@@ -46,9 +46,12 @@ public:
     }
 
     Mat4x4 get_projection() const {
-        auto &t = get<TransformComponent>();
         int width, height;
         std::tie(width, height) = window->get_size();
+        return get_projection(width, height);
+    }
+
+    Mat4x4 get_projection(int width, int height) const {
         return perspective(vfov, (float)width / (float)height, near_plane, far_plane);
     }
 
@@ -58,10 +61,16 @@ public:
             mFatal() << "Camera window not set";
         }
 
-        RenderContext context;
-
         int width, height;
         std::tie(width, height) = window->get_size();
+
+        draw(width, height);
+
+    }
+
+    void draw(int width, int height) {
+
+        RenderContext context;
 
         glViewport(0, 0, width, height);
         glClearColor(0.15f, 0.15f, 0.15f, 1);

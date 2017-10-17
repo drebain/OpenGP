@@ -46,27 +46,30 @@ private:
 
     Shader shader;
 
-    const SurfaceMesh &mesh;
-
     GPUMesh gpu_mesh;
 
 public:
 
-    SurfaceMeshDepthmapRenderer(const SurfaceMesh &mesh) : mesh(mesh) {
-
+    SurfaceMeshDepthmapRenderer() {
         shader.add_vshader_from_source(vshader);
         shader.add_fshader_from_source(fshader);
         shader.link();
-
     }
 
-    void init() {
+    SurfaceMeshDepthmapRenderer(const SurfaceMesh &mesh) : SurfaceMeshDepthmapRenderer() {
+        upload_mesh(mesh);
+    }
 
+    // DEPRECATED
+    void init() {}
+
+    void upload_mesh(const SurfaceMesh &mesh) {
         gpu_mesh.init_from_mesh(mesh);
-
     }
 
     void draw() {
+
+        glEnable(GL_DEPTH_TEST);
 
         gpu_mesh.set_attributes(shader);
 

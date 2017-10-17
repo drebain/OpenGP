@@ -3,6 +3,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #pragma once
+
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
