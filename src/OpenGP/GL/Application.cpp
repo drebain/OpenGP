@@ -82,6 +82,9 @@ Application::WindowContainer::WindowContainer(Application &app, std::function<vo
     Window *new_window = new Window(display_callback, app.hidden_window);
     window = std::unique_ptr<Window>(new_window);
 
+    // Prevent individual calls to glfwSwapBuffers from blocking
+    glfwSwapInterval(0);
+
     fsquad = std::unique_ptr<FullscreenQuad>(new FullscreenQuad());
 
     glfwMakeContextCurrent(app.hidden_window);

@@ -7,6 +7,7 @@
 #include <OpenGP/GL/Application.h>
 #include <OpenGP/GL/Scene.h>
 #include <OpenGP/GL/Window.h>
+#include <OpenGP/GL/SyntheticDepthmap.h>
 #include <OpenGP/SurfaceMesh/GL/SurfaceMeshRenderer.h>
 
 #include <OpenGP/GL/Components/TrackballComponent.h>
@@ -20,31 +21,49 @@ namespace OpenGP {
 class DepthSensorComponent : public Component {
 private:
 
-    //const char *shader = R"GLSL( vec4 shade() { return vec4(1, 1, 1, 1); } )GLSL";
+    std::unique_ptr<SyntheticDepthmap> depthmap;
+
+    FullscreenQuad fsq;
+
+    R32FTexture test_texture;
 
 public:
 
     void init() {
         require<GizmoComponent>();
         auto &renderer = require<WorldRenderComponent>().set_renderer<SurfaceMeshRenderer>();
-        SurfaceMesh mesh;
-        auto v0 = mesh.add_vertex(Vec3(0, 0, 0));
-        auto v1 = mesh.add_vertex(Vec3(1, 1, 1));
-        auto v2 = mesh.add_vertex(Vec3(1, -1, 1));
-        auto v3 = mesh.add_vertex(Vec3(-1, 1, 1));
-        auto v4 = mesh.add_vertex(Vec3(-1, -1, 1));
+        GPUMesh &mesh = renderer.get_gpu_mesh();
 
-        mesh.add_triangle(v0, v1, v3);
-        mesh.add_triangle(v0, v1, v2);
-        mesh.add_triangle(v0, v2, v4);
-        mesh.add_triangle(v0, v3, v4);
+        std::vector<Vec3> vpoint;
 
-        mesh.update_vertex_normals();
+        vpoint.push_back(Vec3(0, 0, 0));
+        vpoint.push_back(Vec3(1, 1, 1));
+        vpoint.push_back(Vec3(1, -1, 1));
+        vpoint.push_back(Vec3(-1, -1, 1));
+        vpoint.push_back(Vec3(-1, 1, 1));
 
-        renderer.upload_mesh(mesh);
-        //renderer.set_material(Material(shader));
+        std::vector<unsigned int> triangles;
+
+        triangles.insert(triangles.end(), { 0, 1, 2 });
+        triangles.insert(triangles.end(), { 0, 2, 3 });
+        triangles.insert(triangles.end(), { 0, 3, 4 });
+        triangles.insert(triangles.end(), { 0, 4, 1 });
+
+        mesh.set_vpoint(vpoint);
+        mesh.set_triangles(triangles);
+
         renderer.wirecolor = Vec3(1, 1, 1);
         renderer.wireframe_mode = WireframeMode::WiresOnly;
+
+        depthmap = std::unique_ptr<SyntheticDepthmap>(new SyntheticDepthmap(512, 512));
+
+        test_texture.allocate(10, 10);
+        Image<float> i = Image<float>::Random(10, 10);
+        test_texture.upload(i);
+    }
+
+    void draw_depthmap() {
+        fsq.draw_texture(test_texture);
     }
 
 };
@@ -84,9 +103,15 @@ public:
         scene_window = &app.create_window([&](Window &window){
             main_camera->draw();
         });
+        scene_window->add_listener<WindowCloseEvent>([&](const WindowCloseEvent &){ app.close(); });
 
         main_camera->set_window(*scene_window);
         canvas->set_camera(*main_camera);
+
+        depthmap_window = &app.create_window([&](Window &window){
+            sensor->draw_depthmap();
+        });
+        depthmap_window->add_listener<WindowCloseEvent>([&](const WindowCloseEvent &){ app.close(); });
 
     }
 

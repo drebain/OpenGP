@@ -161,6 +161,9 @@ void Window::close() {
 
     close_flag = true;
 
+    WindowCloseEvent e{*this};
+    send_event(e);
+
 }
 
 void Window::capture_mouse() {

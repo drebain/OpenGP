@@ -96,7 +96,13 @@ void SurfaceMeshRenderer::render(const RenderContext &context) {
     if (wireframe_mode == WireframeMode::WiresOnly)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    if (!depth_test)
+        glDisable(GL_DEPTH_TEST);
+
     gpu_mesh.draw();
+
+    if (!depth_test)
+        glEnable(GL_DEPTH_TEST);
 
     if (wireframe_mode == WireframeMode::WiresOnly)
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

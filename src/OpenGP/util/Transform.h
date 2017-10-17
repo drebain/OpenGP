@@ -51,20 +51,11 @@ public:
         rotation = rotation * Quaternion(Eigen::AngleAxisf(std::asin(angle), axis / angle));
     }
 
-    Mat4x4 get_matrix() const {
+    Mat4x4 get_transformation_matrix() const {
 
-        Mat4x4 t = Mat4x4::Identity();
-        t(0, 3) = position(0);
-        t(1, 3) = position(1);
-        t(2, 3) = position(2);
-
-        Mat4x4 r = Mat4x4::Identity();
-        r.block<3, 3>(0, 0) = rotation.matrix();
-
-        Mat4x4 s = Mat4x4::Identity();
-        t(0, 0) = scale(0);
-        t(1, 1) = scale(1);
-        t(2, 2) = scale(2);
+        Mat4x4 t = get_translation_matrix();
+        Mat4x4 r = get_rotatation_matrix();
+        Mat4x4 s = get_scale_matrix();
 
         return t * r * s;
 
@@ -94,6 +85,16 @@ public:
         apply_scale(t.scale);
     }
 
+    Mat4x4 get_translation_matrix() const {
+
+        Mat4x4 t = Mat4x4::Identity();
+        t(0, 3) = position(0);
+        t(1, 3) = position(1);
+        t(2, 3) = position(2);
+
+        return t;
+
+    }
 
     void set_translation_matrix(const Mat4x4 &mat) {
         position = decompose_matrix_translation(mat);
@@ -111,6 +112,14 @@ public:
         position += v;
     }
 
+    Mat4x4 get_rotatation_matrix() const {
+
+        Mat4x4 r = Mat4x4::Identity();
+        r.block<3, 3>(0, 0) = rotation.matrix();
+
+        return r;
+
+    }
 
     void set_rotation_matrix(const Mat4x4 &mat) {
         rotation = decompose_matrix_rotation(mat);
@@ -121,9 +130,19 @@ public:
     }
 
     void apply_rotation(const Quaternion &q) {
-        rotation *= q;
+        rotation = q * rotation;
     }
 
+    Mat4x4 get_scale_matrix() const {
+
+        Mat4x4 s = Mat4x4::Identity();
+        s(0, 0) = scale(0);
+        s(1, 1) = scale(1);
+        s(2, 2) = scale(2);
+
+        return s;
+
+    }
 
     void set_scale_matrix(const Mat4x4 &mat) {
         scale = decompose_matrix_scale(mat);

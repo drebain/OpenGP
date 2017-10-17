@@ -26,6 +26,8 @@ private:
 
 public:
 
+    bool depth_test = true;
+
     HEADERONLY_INLINE SurfaceMeshRenderer();
 
     virtual ~SurfaceMeshRenderer() {}

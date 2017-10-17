@@ -111,6 +111,10 @@ template <GLenum INTERNAL_FORMAT, GLenum FORMAT, GLenum TYPE>
 class Texture : public GenericTexture {
 public:
 
+    static constexpr GLenum InternalFormat = INTERNAL_FORMAT;
+    static constexpr GLenum Format = FORMAT;
+    static constexpr GLenum Type = TYPE;
+
     Texture() {
         internal_format = INTERNAL_FORMAT;
         format = FORMAT;
@@ -130,10 +134,8 @@ public:
     template <typename ImageType>
     void upload(const ImageType &image) {
 
-        static_assert(std::is_same<
-            Texture<INTERNAL_FORMAT, FORMAT, TYPE>,
-            typename TextureTypeBuilder<ImageType>::Type
-        >::value, "Incompatible Image and texture types");
+        using InputType = typename TextureTypeBuilder<ImageType>::Type;
+        static_assert(Type == InputType::Type && Format == InputType::Format, "Incompatible Image and texture types");
 
         upload_raw(image.cols(), image.rows(), image.data());
 
@@ -152,10 +154,8 @@ public:
     template <typename ImageType>
     void download(ImageType &image) {
 
-        static_assert(std::is_same<
-            Texture<INTERNAL_FORMAT, FORMAT, TYPE>,
-            typename TextureTypeBuilder<ImageType>::Type
-        >::value, "Incompatible Image and texture types");
+        using InputType = typename TextureTypeBuilder<ImageType>::Type;
+        static_assert(Type == InputType::Type && Format == InputType::Format, "Incompatible Image and texture types");
 
         int width, height;
         glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
@@ -182,7 +182,7 @@ public:
 using RGBA8Texture = Texture<GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE>;
 using RGB8Texture = Texture<GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE>;
 using RGB32FTexture = Texture<GL_RGB32F, GL_RGB, GL_FLOAT>;
-using R32Texture = Texture<GL_R32F, GL_RED, GL_FLOAT>;
+using R32FTexture = Texture<GL_R32F, GL_RED, GL_FLOAT>;
 using D16Texture = Texture<GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT>;
 
 //=============================================================================
