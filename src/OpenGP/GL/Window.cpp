@@ -28,9 +28,16 @@ namespace {
 
 }
 
-Window::Window(std::function<void(Window&)> display_callback) : Window(display_callback, nullptr) {}
+Window::Window(std::function<void(Window&)> display_callback) : Window(display_callback, nullptr) {
+
+    /// `display_callback` will be executed when `draw()` is called, and should perform any rendering needed to update the content of the window.
+
+}
 
 Window::Window(std::function<void(Window&)> display_callback, GLFWwindow *parent_context) {
+
+    /// `display_callback` will be executed when `draw()` is called, and should perform any rendering needed to update the content of the window.
+    /// Any transferable OpenGL objects in `parent_context` will be inherited
 
     // note: can be called multiple times without problems
     // docs: "additional calls to glfwInit() after successful initialization but before
@@ -51,12 +58,12 @@ Window::Window(std::function<void(Window&)> display_callback, GLFWwindow *parent
 
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    /// Attempt to open the window: fails if required version unavailable
-    /// @note Intel GPUs do not support OpenGL 3.0
+    // Attempt to open the window: fails if required version unavailable
+    // @note Intel GPUs do not support OpenGL 3.0
     if( !(handle = glfwCreateWindow(800, 600, "New Window", nullptr, parent_context)) )
         mFatal() << "Failed to open OpenGL 3 GLFW window.";
 
-    /// NOTE: this window's context must be current when this function returns
+    // NOTE: this window's context must be current when this function returns
     glfwMakeContextCurrent(handle);
     if(glfwGetCurrentContext() != handle)
         mFatal() << "Failed to make GLFW context current.";
@@ -80,7 +87,7 @@ Window::Window(std::function<void(Window&)> display_callback, GLFWwindow *parent
     glfwSetCursorEnterCallback(handle, mouse_enter_callback);
     glfwSetCharCallback(handle, char_callback);
 
-    /// Wipe Startup Errors (TODO: check who causes them? GLEW?)
+    // Wipe Startup Errors (TODO: check who causes them? GLEW?)
     while (glGetError() != GL_NO_ERROR) {}
 
     this->display_callback = display_callback;
@@ -127,6 +134,8 @@ std::tuple<int, int, int> Window::get_GL_version() {
 
 void Window::draw() {
 
+    /// @attention Calls to this function may block to maintain a constant framerate (vsync)
+
     glfwMakeContextCurrent(handle);
 
     display_callback(*this);
@@ -158,6 +167,9 @@ bool Window::should_close() const {
 }
 
 void Window::close() {
+
+    if (close_flag)
+        return;
 
     close_flag = true;
 
@@ -225,7 +237,7 @@ void Window::mouse_scroll_callback(GLFWwindow *handle, double dx, double dy) {
         wrapper(handle).input.mouse_scroll_delta = Vec2(dx, dy);
 
         MouseScrollEvent event;
-        event.delta = Vec2(dx, dy);
+        event.delta += Vec2(dx, dy);
         wrapper(handle).send_event(event);
 
     });

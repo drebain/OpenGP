@@ -21,6 +21,8 @@ Entity &Scene::create_entity() {
 
 void Scene::update() {
 
+    /// @note Calls `Component::update()` for all components on all objects
+
     for (auto &entity : entities) {
         entity.update();
     }

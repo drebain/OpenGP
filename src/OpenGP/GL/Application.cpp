@@ -117,8 +117,8 @@ Application::Application(const char *name) {
 
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    /// Attempt to open the window: fails if required version unavailable
-    /// @note Intel GPUs do not support OpenGL 3.0
+    // Attempt to open the window: fails if required version unavailable
+    // @note Intel GPUs do not support OpenGL 3.0
     if( !(hidden_window = glfwCreateWindow(800, 600, name, nullptr, nullptr)) )
         mFatal() << "Failed to open OpenGL 3 GLFW window.";
 
@@ -139,7 +139,7 @@ Application::Application(const char *name) {
     glfwSetWindowUserPointer(hidden_window, this);
     glfwSetWindowCloseCallback(hidden_window, &application_close_callback);
 
-    /// Wipe Startup Errors (TODO: check who causes them? GLEW?)
+    // Wipe Startup Errors (TODO: check who causes them? GLEW?)
     while (glGetError() != GL_NO_ERROR) {}
 
 }
@@ -157,6 +157,8 @@ int Application::run() {
         }
 
         update_callback();
+        ApplicationUpdateEvent event;
+        send_event(event);
 
         for (auto &container : windows) {
 

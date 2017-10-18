@@ -15,6 +15,7 @@
 namespace OpenGP {
 //=============================================================================
 
+/// A scene graph populated with `Entity` objects
 class Scene {
 private:
 
@@ -22,10 +23,13 @@ private:
 
 public:
 
+    /// Create a new empty scene
     Scene() {}
 
+    /// Create a new entity within the scene
     HEADERONLY_INLINE Entity &create_entity();
 
+    /// Create a new entity within the scene that has component `T` and any of `T`'s dependencies
     template <typename T>
     T &create_entity_with() {
         auto &entity = create_entity();
@@ -33,6 +37,7 @@ public:
         return t;
     }
 
+    /// Get an iterable object that contains all objects with the specified component
     template <typename T>
     GenericIterable<T> all_of_type() {
 
@@ -48,6 +53,7 @@ public:
 
     }
 
+    /// Run one step of the scene simulation
     HEADERONLY_INLINE void update();
 
 };

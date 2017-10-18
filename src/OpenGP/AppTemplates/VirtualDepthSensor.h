@@ -30,7 +30,7 @@ private:
 
 public:
 
-    int width = 512, height = 512;
+    int width = 640, height = 480;
 
     void init() {
         require<GizmoComponent>();
@@ -147,7 +147,7 @@ public:
 
     VirtualDepthSensor() {
 
-        app.set_update_callback([&](){ scene.update(); });
+        app.add_listener<ApplicationUpdateEvent>([&](const ApplicationUpdateEvent&){ scene.update(); });
 
         main_camera = &scene.create_entity_with<TrackballComponent>().get<CameraComponent>();
 

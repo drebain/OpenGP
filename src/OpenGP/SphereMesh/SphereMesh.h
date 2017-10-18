@@ -18,12 +18,15 @@
 namespace OpenGP {
 //=============================================================================
 
+/// A data structure representing a sphere mesh
 class SphereMesh : public Global_properties {
 public:
 
     template <typename H>
     class HandleIterator;
 
+    /// @brief Base class for all topology types (internally it is basically an index)
+    /// @sa `Vertex`, `Sphere`, `Edge`, `Face`
     class BaseHandle {
         template <typename>
         friend class HandleIterator;
@@ -33,26 +36,40 @@ public:
 
     public:
 
+        /// Construct an invalid handle
         explicit BaseHandle(int idx=-1) : _idx(idx) {}
 
+        /// Get the underlying index
         int idx() const { return _idx; }
 
+        /// Check if the index is valid (i.e. > 0)
         bool is_valid() const { return _idx > -1; }
 
+        /// @brief Check whether two handles have the same index
+        /// @warning the two handles must have the same derived
+        /// type (`Vertex`, `Sphere`, etc.) or the result of the comparison is undefined
         bool operator==(const BaseHandle &rhs) const {
             return _idx == rhs._idx;
         }
 
+        /// @brief Check whether two handles have the same index
+        /// @warning the two handles must have the same derived
+        /// type (`Vertex`, `Sphere`, etc.) or the result of the comparison is undefined
         bool operator!=(const BaseHandle &rhs) const {
             return _idx != rhs._idx;
         }
 
+        /// @brief Check for ordering of the indices
+        /// @warning the two handles must have the same derived
+        /// type (`Vertex`, `Sphere`, etc.) or the result of the comparison is undefined
         bool operator<(const BaseHandle &rhs) const {
             return _idx < rhs._idx;
         }
 
     };
 
+    /// This class iterates over all geometric elements of a type
+    /// @sa `VertexIterator`, `SphereIterator`, `EdgeIterator`, `FaceIterator`
     template <typename H>
     class HandleIterator {
     private:
@@ -62,24 +79,36 @@ public:
 
     public:
 
+        /// Construct an iterator over `SphereMesh` m starting at element h
         HandleIterator(H h=H(0), const SphereMesh *m=nullptr) : handle(h), mesh(m) {}
 
+        /// Get the handle that the iterator refers to
         H operator*() const { return handle; }
 
+        /// Check whether two iterators refer to the same handle
+        /// @warning the two iterators must have the same derived
+        /// type (`VertexIterator`, `SphereIterator`, etc.) or the
+        /// result of the comparison is undefined
         bool operator==(const HandleIterator &rhs) const {
             return handle == rhs.handle;
         }
 
+        /// Check whether two iterators refer to the same handle
+        /// @warning the two iterators must have the same derived
+        /// type (`VertexIterator`, `SphereIterator`, etc.) or the
+        /// result of the comparison is undefined
         bool operator!=(const HandleIterator &rhs) const {
             return handle != rhs.handle;
         }
 
+        /// Advance the iterator to the next position
         HandleIterator &operator++() {
             assert(mesh);
             ++handle._idx;
             return *this;
         }
 
+        /// Move the iterator back to the previous position
         HandleIterator &operator--() {
             assert(mesh);
             --handle._idx;
@@ -89,6 +118,7 @@ public:
 
     };
 
+    /// An adaptor class to allow easy iteration using c++11 for-loops
     template <typename H>
     class HandleContainer {
     public:
@@ -101,12 +131,18 @@ public:
 
     public:
 
+        /// Construct a container representing the range between `_begin` and `_end`
         HandleContainer(HIterator _begin, HIterator _end) : _begin(_begin), _end(_end) {}
+
+        /// Get the begin iterator
         HIterator begin() const { return _begin; }
+
+        /// Get the end iterator
         HIterator end()   const { return _end; }
 
     };
 
+    /// Generic property of type `T`
     template <typename H, typename T>
     class HandleProperty : public Property<T> {
     public:
@@ -115,54 +151,86 @@ public:
         explicit HandleProperty() {}
         explicit HandleProperty(Property<T> p) : Property<T>(p) {}
 
-        /// access the data stored for vertex \c v
+        /// access the data stored for handle `h`
         typename Property<T>::reference operator[](H h)
         {
             return Property<T>::operator[](h.idx());
         }
 
-        /// access the data stored for vertex \c v
+        /// access the data stored for handle `h`
         typename Property<T>::const_reference operator[](H h) const
         {
             return Property<T>::operator[](h.idx());
         }
     };
 
+    /// This type represents a vertex
     struct Vertex : public BaseHandle {
+        /// Construct a new handle (invalid by default)
         explicit Vertex(int idx=-1) : BaseHandle(idx) {}
     };
 
+    /// This type represents a sphere
     struct Sphere : public BaseHandle {
+        /// Construct a new handle (invalid by default)
         explicit Sphere(int idx=-1) : BaseHandle(idx) {}
     };
 
+    /// This type represents an edge (pill)
     struct Edge : public BaseHandle {
+        /// Construct a new handle (invalid by default)
         explicit Edge(int idx=-1) : BaseHandle(idx) {}
     };
 
+    /// This type represents a face (wedge)
     struct Face : public BaseHandle {
+        /// Construct a new handle (invalid by default)
         explicit Face(int idx=-1) : BaseHandle(idx) {}
     };
 
+
+    /// An iterator of the vertices of a sphere mesh
     using VertexIterator = HandleIterator<Vertex>;
+
+    /// An iterator of the singular spheres of a sphere mesh
     using SphereIterator = HandleIterator<Sphere>;
+
+    /// An iterator of the edges (pills) of a sphere mesh
     using EdgeIterator = HandleIterator<Edge>;
+
+    /// An iterator of the faces (wedges) of a sphere mesh
     using FaceIterator = HandleIterator<Face>;
 
+
+    /// A container representing a range of vertices
     using VertexContainer = HandleContainer<Vertex>;
+
+    /// A container representing a range of spheres
     using SphereContainer = HandleContainer<Sphere>;
+
+    /// A container representing a range of edges (pills)
     using EdgeContainer = HandleContainer<Edge>;
+
+    /// A container representing a range of faces (wedges)
     using FaceContainer = HandleContainer<Face>;
 
+    /// A per-vertex property
     template <typename T>
     using VertexProperty = HandleProperty<Vertex, T>;
+
+    /// A per-singular sphere property
     template <typename T>
     using SphereProperty = HandleProperty<Sphere, T>;
+
+    /// A per-edge (pill) property
     template <typename T>
     using EdgeProperty = HandleProperty<Edge, T>;
+
+    /// A per-face (wedge) property
     template <typename T>
     using FaceProperty = HandleProperty<Face, T>;
 
+    /// A single point with a radius (x, y, z, r)
     typedef Vec4 Point;
 
 private:
@@ -196,6 +264,7 @@ private:
 
 public:
 
+    /// Default constructor for an empty Sphere Mesh
     SphereMesh() {
         sconn  = add_sphere_property<SphereConnectivity>("s:connectivity");
         econn  = add_edge_property<EdgeConnectivity>("e:connectivity");
@@ -205,6 +274,7 @@ public:
 
     virtual ~SphereMesh() {}
 
+    /// Remove all geometry from the mesh
     void clear() {
 
         vprops.resize(0);
@@ -222,6 +292,7 @@ public:
 
     }
 
+    /// remove unused memory from vectors
     void free_memory() {
         vprops.free_memory();
         sprops.free_memory();
@@ -229,6 +300,7 @@ public:
         fprops.free_memory();
     }
 
+    /// reserve memory (mainly used in file readers)
     void reserve(int nv, int ns, int ne, int nf) {
         vprops.reserve(nv);
         sprops.reserve(ns);
@@ -236,6 +308,7 @@ public:
         fprops.reserve(nf);
     }
 
+    /// add a new vertex with position `pos` and radius `rad`
     Vertex add_vertex(Vec3 pos, float rad) {
         Point p;
         p.head<3>() = pos;
@@ -243,31 +316,38 @@ public:
         return add_vertex(p);
     }
 
+    /// add a new vertex with position and radius `vertex`
     Vertex add_vertex(Point vertex) {
         vprops.push_back();
         vpoint[*(--(vertices_end()))] = vertex;
         return *(--vertices_end());
     }
 
+    /// Add a singular sphere at vertex `vertex`
     Sphere add_sphere(Vertex vertex) {
         sprops.push_back();
         sconn[*(--(spheres_end()))] = vertex.idx();
         return *(--spheres_end());
     }
 
+    /// Add an edge (pill) between vertices `v0` and `v1`
     Edge add_edge(Vertex v0, Vertex v1) {
         eprops.push_back();
         econn[*(--(edges_end()))] = EdgeConnectivity(v0.idx(), v1.idx());
         return *(--edges_end());
     }
 
+    /// Add a face (wedge) between vertices `v0`, `v1`, and `v2`
     Face add_face(Vertex v0, Vertex v1, Vertex v2) {
         fprops.push_back();
         fconn[*(--(faces_end()))] = FaceConnectivity(v0.idx(), v1.idx(), v2.idx());
         return *(--faces_end());
     }
 
+    /// Delete vertex `v` from the mesh
     void delete_vertex(Vertex v) {
+
+        /// @note This will also delete any primitives that include `v`
 
         if (vdeleted[v]) return;
 
@@ -311,6 +391,7 @@ public:
 
     }
 
+    /// Delete sphere `s` from the mesh
     void delete_sphere(Sphere s) {
 
         if (sdeleted[s]) return;
@@ -321,6 +402,7 @@ public:
 
     }
 
+    /// Delete edge (pill) `e` from the mesh
     void delete_edge(Edge e) {
 
         if (edeleted[e]) return;
@@ -331,6 +413,7 @@ public:
 
     }
 
+    /// Delete face (wedge) `f` from the mesh
     void delete_face(Face f) {
 
         if (fdeleted[f]) return;
@@ -341,38 +424,88 @@ public:
 
     }
 
+    /// Get the vertex that defines the sphere `s`
     Vertex vertex(Sphere s) const { return Vertex(sconn[s]); }
+
+    /// Get the ith vertex in edge (pill) `e`
     Vertex vertex(Edge e, int i) const { assert(i < 2 && i > -1); return Vertex(econn[e](i)); }
+
+    /// Get the ith vertex in face (wedge) `f`
     Vertex vertex(Face f, int i) const { assert(i < 3 && i > -1); return Vertex(fconn[f](i)); }
 
+    /// Get an iterator pointing at the first vertex
     VertexIterator vertices_begin() const { return VertexIterator(Vertex(0), this); }
+
+    /// Get an iterator pointing at the first singular sphere
     SphereIterator spheres_begin() const { return SphereIterator(Sphere(0), this); }
+
+    /// Get an iterator pointing at the first edge (pill)
     EdgeIterator edges_begin() const { return EdgeIterator(Edge(0), this); }
+
+    /// Get an iterator pointing at the first face (wedge)
     FaceIterator faces_begin() const { return FaceIterator(Face(0), this); }
 
+    /// Get a past-the-end iterator for the vertices
     VertexIterator vertices_end() const { return VertexIterator(Vertex(vprops.size()), this); }
+
+    /// Get a past-the-end iterator for the singular spheres
     SphereIterator spheres_end() const { return SphereIterator(Sphere(sprops.size()), this); }
+
+    /// Get a past-the-end iterator for the edges (pills)
     EdgeIterator edges_end() const { return EdgeIterator(Edge(eprops.size()), this); }
+
+    /// Get a past-the-end iterator for the faces (wedges)
     FaceIterator faces_end() const { return FaceIterator(Face(fprops.size()), this); }
 
+
+    /// Get a container adaptor representing all vertices in the mesh
     VertexContainer vertices() const { return VertexContainer(vertices_begin(), vertices_end()); }
+
+    /// Get a container adaptor representing all singular spherees in the mesh
     SphereContainer spheres() const { return SphereContainer(spheres_begin(), spheres_end()); }
+
+    /// Get a container adaptor representing all edges (pills) in the mesh
     EdgeContainer edges() const { return EdgeContainer(edges_begin(), edges_end()); }
+
+    /// Get a container adaptor representing all faces (wedges) in the mesh
     FaceContainer faces() const { return FaceContainer(faces_begin(), faces_end()); }
 
+
+    /// Get the number of deleted and valid vertices in the mesh
     unsigned int vertices_size() const { return (unsigned int) vprops.size(); }
+
+    /// Get the number of deleted and valid singular spheres in the mesh
     unsigned int spheres_size() const { return (unsigned int) sprops.size(); }
+
+    /// Get the number of deleted and valid edges (pills) in the mesh
     unsigned int edges_size() const { return (unsigned int) eprops.size(); }
+
+    /// Get the number of deleted and valid faces (wedges) in the mesh
     unsigned int faces_size() const { return (unsigned int) fprops.size(); }
 
+
+    /// Get the number of valid vertices in the mesh
     unsigned int n_vertices() const { return vertices_size() - deleted_vertices; }
+
+    /// Get the number of valid singular spheres in the mesh
     unsigned int n_spheres() const { return spheres_size() - deleted_spheres; }
+
+    /// Get the number of valid edges (pills) in the mesh
     unsigned int n_edges() const { return edges_size() - deleted_edges; }
+
+    /// Get the number of valid faces (wedges) in the mesh
     unsigned int n_faces() const { return faces_size() - deleted_faces; }
 
+    /// Check if a `Vertex` handle refers to an element within array bounds
     bool is_valid(Vertex v) const { return v.idx() != 0 && v.idx() < (int)vertices_size(); }
+
+    /// Check if a `Sphere` handle refers to an element within array bounds
     bool is_valid(Sphere s) const { return s.idx() != 0 && s.idx() < (int)spheres_size(); }
+
+    /// Check if a `Edge` handle refers to an element within array bounds
     bool is_valid(Edge e) const { return e.idx() != 0 && e.idx() < (int)edges_size(); }
+
+    /// Check if a `Face` handle refers to an element within array bounds
     bool is_valid(Face f) const { return f.idx() != 0 && f.idx() < (int)faces_size(); }
 
     template <class T>
@@ -474,6 +607,7 @@ public:
         return fprops.get_type(name);
     }
 
+    /// Read the contents of the sphere mesh file (.smo) at `filename` into the mesh
     bool read(const std::string& filename) {
 
         std::ifstream file_stream(filename, std::ios_base::in);
@@ -488,6 +622,7 @@ public:
 
     }
 
+    /// Read the contents of the sphere mesh file (.smo) stored in `text` into the mesh
     bool read_text(const std::string& text) {
 
         std::regex vert_regex(R"regex(v\s+([\d\-\.]+)\s+([\d\-\.]+)\s+([\d\-\.]+)\s+([\d\-\.]+))regex");
@@ -551,6 +686,7 @@ public:
 
     }
 
+    /// Write the contents of the mesh into the file at `filename` (.smo format)
     bool write(const std::string& filename) const {
 
         std::ofstream file_stream(filename);
@@ -567,6 +703,7 @@ public:
 
     }
 
+    /// Write the contents of the mesh into a string (.smo format)
     std::string write_text() const {
 
         std::string text;
@@ -605,9 +742,13 @@ public:
 
     }
 
+    /// Check if the mesh has garbage that needs to be cleaned up
     bool garbage() const { return has_garbage; }
 
+    /// Perform a garbage collection pass
     void garbage_collection() {
+
+        /// @warning invalidates all handles and iterators
 
         int  i, i0, i1,
         nV(vertices_size()),
