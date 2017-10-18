@@ -17,6 +17,8 @@ namespace OpenGP {
 
 class EventProvider;
 
+/// @brief Object that allows callbacks to be automatically deregistered if the
+/// objects they reference are destroyed @sa `EventProvider`
 class EventSentinel {
 
     friend class EventProvider;
@@ -37,12 +39,15 @@ public:
     EventSentinel &operator=(const EventSentinel&) = delete;
     EventSentinel &operator=(EventSentinel&&) = default;
 
+    /// Allow all guarded callbacks to be destroyed, as if the sentinel had died
     void reset() {
         handle = std::shared_ptr<int>(new int(0));
     }
 
 };
 
+///  @brief Base class that provides derived classes the abillity to register
+/// callbacks and send events
 class EventProvider {
 private:
 
@@ -52,6 +57,8 @@ private:
 
 protected:
 
+    /// @brief A derived class can call this method to broadcast an event to all
+    /// of its registered listeners
     template <typename EventType>
     void send_event(const EventType &event) {
 
@@ -65,15 +72,20 @@ protected:
 
 public:
 
+    /// A handle that can be use to deregister a particular listener
     using ListenerHandle = decltype(listeners)::mapped_type::iterator;
 
+    /// Register a listener to be called for events of `EventType`
     template <typename EventType, typename ListenerType>
     ListenerHandle add_listener(ListenerType listener) {
         return add_listener<EventType>(listener, own_sentinel);
     }
 
+    /// Register a listener to be called for events of `EventType`
     template <typename EventType, typename ListenerType>
     ListenerHandle add_listener(ListenerType listener, const EventSentinel &sentinel) {
+
+        /// If `sentinel` dies before the event provider, the listener will be deregistered
 
         auto idx = std::type_index(typeid(EventType));
 
@@ -101,6 +113,7 @@ public:
 
     }
 
+    /// Manually deregister a particular listener
     template <typename EventType>
     void remove_listener(const ListenerHandle &handle) {
 

@@ -13,9 +13,11 @@
 namespace OpenGP {
 //=============================================================================
 
+/// A component that draws a gizmo that allows modification of the entity's transform
 class GizmoComponent : public Component {
 public:
 
+    /// The current operation mode of the gizmo
     ImGuizmo::OPERATION operation = ImGuizmo::TRANSLATE;
 
     void init() {
@@ -23,6 +25,7 @@ public:
         transform.scale = Vec3(0.1, 0.1, 0.2);
     }
 
+    /// Handler for gui events that creates the gizmo UI element
     void on_gui(const GUIElementDrawEvent &event) {
 
         auto &input = event.camera.get_window().get_input();
