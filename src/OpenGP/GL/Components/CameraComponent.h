@@ -16,9 +16,10 @@
 namespace OpenGP {
 //=============================================================================
 
+/// An event indicating that any canvases should draw their UI elements
 struct GUIRenderEvent {};
 
-
+/// A component representing a camera in the scene
 class CameraComponent : public Component, public EventProvider {
 private:
 
@@ -26,8 +27,13 @@ private:
 
 public:
 
+    /// The distance from the eye to the near clipping plane
     float near_plane = 0.1f;
+
+    /// The distance from the eye to the far clipping plane
     float far_plane = 1000;
+
+    /// The vertical field-of-view of the camera in degrees
     float vfov = 60;
 
     CameraComponent() {}
@@ -36,25 +42,31 @@ public:
         require<TransformComponent>();
     }
 
+    /// Check if there is a window associated with the camera
     bool has_window() const {
         return window != nullptr;
     }
 
+    /// Get the view matrix of the camera
     Mat4x4 get_view() const {
         auto &t = get<TransformComponent>();
         return look_at(t.position, Vec3(t.position + t.forward()), t.up());
     }
 
+    /// Get the projection matrix of the camera used when rendering to the attached window
     Mat4x4 get_projection() const {
         int width, height;
         std::tie(width, height) = window->get_size();
         return get_projection(width, height);
     }
 
+    /// @brief Get the projection matrix of the camera used when rendering to a
+    /// framebuffer with width `width` and height `height`
     Mat4x4 get_projection(int width, int height) const {
         return perspective(vfov, (float)width / (float)height, near_plane, far_plane);
     }
 
+    /// Draw the scene from the camera POV assuming there is a window attached and bound
     void draw() {
 
         if (window == nullptr) {
@@ -68,6 +80,7 @@ public:
 
     }
 
+    /// Draw the scene from the camera POV into the bound framebuffer with given dimensions
     void draw(int width, int height) {
 
         RenderContext context;
@@ -110,10 +123,12 @@ public:
 
     }
 
+    /// Get the attached window assuming it exists
     Window &get_window() {
         return *window;
     }
 
+    /// Attach a window to the camera
     void set_window(Window &window) {
         this->window = &window;
     }

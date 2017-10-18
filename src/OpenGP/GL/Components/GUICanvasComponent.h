@@ -13,10 +13,12 @@
 namespace OpenGP {
 //=============================================================================
 
+/// An event indicating that listeners should perform their UI creation calls
 struct GUIElementDrawEvent {
     CameraComponent &camera;
 };
 
+/// A component representing a GUI layer in a camera view
 class GUICanvasComponent : public Component, public EventProvider {
 private:
 
@@ -32,7 +34,10 @@ private:
 
 public:
 
+    /// Attach this canvas to a camera
     void set_camera(CameraComponent &camera) {
+
+        /// @note Any previous attachment will be discarded
 
         // Clear any old callbacks
         sentinel.reset();
@@ -92,7 +97,7 @@ public:
 
     }
 
-    // DEPRECATED: use add_listener instead
+    /// @deprecated use add_listener instead
     void set_action(std::function<void()> action) {
         this->action = action;
     }

@@ -12,6 +12,7 @@
 namespace OpenGP {
 //=============================================================================
 
+/// A component representing a camera that is controlled by user input
 class TrackballComponent : public Component {
 private:
 
@@ -22,10 +23,16 @@ private:
 
 public:
 
+    /// The point about which the camera will rotate
     Vec3 center;
 
+    /// Multiplier for panning mouse input
     float pan_sensitivity = 0.005;
+
+    /// Multiplier for rotating mouse input
     float rotate_sensitivity = 0.01;
+
+    /// Multiplier for zooming scroll input
     float scroll_sensitivity = -0.1;
 
     void init() {

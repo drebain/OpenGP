@@ -12,10 +12,11 @@
 namespace OpenGP {
 //=============================================================================
 
+/// A component representing the position, orientation and scale of an entity
 class TransformComponent : public Transform, public Component {
 public:
 
-    
+    // TODO: add parent + children here to make actual scene graph
 
 };
 

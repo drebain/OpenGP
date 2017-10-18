@@ -13,6 +13,7 @@
 namespace OpenGP {
 //=============================================================================
 
+/// A component representing some geometry that may be rendered to a depthmap
 class DepthRenderComponent : public Component {
 private:
 
@@ -20,12 +21,14 @@ private:
 
 public:
 
+    /// Should the object be rendered
     bool visible = true;
 
     void init() {
         require<TransformComponent>();
     }
 
+    /// Construct a new renderer of type `T` with the given arguments
     template <typename T, typename ...Args>
     T &set_renderer(Args& ...args) {
         T *t = new T(args...);
@@ -33,8 +36,10 @@ public:
         return *t;
     }
 
+    /// Get a reference to the renderer
     template <typename T = DepthmapRenderer>
     T &get_renderer() {
+        /// The contained renderer must exist and be convertible to type `T&`
         assert(renderer);
         return *dynamic_cast<T*>(renderer.get());
     }
