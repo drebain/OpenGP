@@ -116,10 +116,18 @@ public:
 
     }
 
+    SyntheticDepthmap* get_depthmap() {
+        return depthmap.get();
+    }
+
     void draw_color() {
 
         fsq.draw_texture(*color_texture);
 
+    }
+
+    RGB8Texture* get_color_texture() {
+        return color_texture.get();
     }
 
 };

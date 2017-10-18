@@ -27,7 +27,7 @@ public:
     }
 
     template <typename T, typename ...Args>
-    T &set_renderer(Args ...args) {
+    T &set_renderer(Args& ...args) {
         T *t = new T(args...);
         renderer = std::unique_ptr<DepthmapRenderer>(t);
         return *t;
