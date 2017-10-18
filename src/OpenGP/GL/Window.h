@@ -21,26 +21,40 @@ namespace OpenGP {
 
 typedef int KeyCode;
 
+/// An event indicating that the status of a keyboard key changed
 struct KeyEvent {
+    /// The keycode of the affected key
     KeyCode key;
+    /// Was the key released or pressed
     bool released;
 };
 
+/// An event indicating that the mouse was moved
 struct MouseMoveEvent {
-    Vec2 delta, position;
+    /// The relative movement of the mouse
+    Vec2 delta;
+    /// The new position of the mouse
+    Vec2 position;
 };
 
+/// An event indicating that the status of a mouse button changed
 struct MouseButtonEvent {
+    /// The index of the affected button
     int button;
+    /// Was the button released or pressed
     bool released;
 };
 
+/// An event indicating that scroll input was recieved
 struct MouseScrollEvent {
+    /// The scroll displacement
     Vec2 delta;
 };
 
 class Application;
 
+
+/// A wrapper object that manages a window
 class Window : public EventProvider {
 
     friend class Application;
@@ -64,7 +78,10 @@ private:
 
 public:
 
+    /// Create and show a new window
     HEADERONLY_INLINE Window(std::function<void(Window&)> display_callback);
+
+    /// Create and show a new window that shares objects with a parent context
     HEADERONLY_INLINE Window(std::function<void(Window&)> display_callback, GLFWwindow *parent_context);
 
     Window(const Window&) = delete;
@@ -72,29 +89,46 @@ public:
 
     HEADERONLY_INLINE virtual ~Window();
 
+    /// Get the ratio of window size to framebuffer size
     HEADERONLY_INLINE float get_pixel_scale();
 
+    /// Set the caption of the window that is shown on the desktop
     HEADERONLY_INLINE void set_title(const std::string &title);
 
+    /// Get the size in pixels of the window as reported by the OS
     HEADERONLY_INLINE std::tuple<int, int> get_size();
+
+    /// Resize the window
     HEADERONLY_INLINE void set_size(int width, int height);
 
+    /// Get the version number of the window's OpenGL context
     HEADERONLY_INLINE std::tuple<int, int, int> get_GL_version();
 
+    /// Execute the display callback and swap the buffers to update the window contents
     HEADERONLY_INLINE void draw();
 
+    /// Process any pending input actions
     HEADERONLY_INLINE void poll();
 
+    /// Retrieve the window's close flag
     HEADERONLY_INLINE bool should_close() const;
 
+    /// Set the window's close flag
     HEADERONLY_INLINE void close();
 
+    /// Mark the mouse as captured
     HEADERONLY_INLINE void capture_mouse();
+
+    /// Mark the keyboard as captured
     HEADERONLY_INLINE void capture_keyboard();
 
+    /// Unset the capture flag for the mouse
     HEADERONLY_INLINE void release_mouse();
+
+    /// Unset the capture flag for the keyboard
     HEADERONLY_INLINE void release_keyboard();
 
+    /// A class that exposes the status of user input for a particular window
     class Input {
 
         friend class Window;
@@ -107,11 +141,22 @@ public:
 
     public:
 
-        bool mouse_captured, keyboard_captured;
+        /// Flag indicating whether a specific element is handling mouse input
+        bool mouse_captured;
 
-        Vec2 mouse_position, mouse_delta;
+        /// Flag indicating whether a specific element is handling keyboard input
+        bool keyboard_captured;
+
+        /// The current position of the mouse in the window
+        Vec2 mouse_position;
+
+        /// The change in mouse position since the last input poll
+        Vec2 mouse_delta;
+
+        /// The scroll displacement since last input poll
         Vec2 mouse_scroll_delta;
 
+        /// Get the status (pressed or not) of the specified mouse button
         bool get_mouse(int button) const {
             auto it = buttons.find(button);
             if (it == buttons.end()) {
@@ -121,6 +166,7 @@ public:
             }
         }
 
+        /// Get the status (pressed or not) of the specified keyboard key
         bool get_key(KeyCode key) const {
             auto it = keys.find(key);
             if (it == keys.end()) {
@@ -130,6 +176,7 @@ public:
             }
         }
 
+        /// Get text entered since last input poll
         const std::u32string &get_text() const {
             return text;
         }
@@ -142,10 +189,12 @@ private:
 
 public:
 
+    /// Get a reference to this window's input manager
     const Input &get_input() const { return input; }
 
 };
 
+/// An event indicating that this window is closing
 struct WindowCloseEvent {
     Window &window;
 };

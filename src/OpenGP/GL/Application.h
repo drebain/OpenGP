@@ -17,7 +17,11 @@
 namespace OpenGP {
 //=============================================================================
 
-class Application {
+/// An event sent every frame by the application
+struct ApplicationUpdateEvent {};
+
+/// A framework class that manages windows and runs the main loop
+class Application : public EventProvider {
 private:
 
     struct WindowContainer {
@@ -48,14 +52,20 @@ private:
 
 public:
 
+    /// Create a new application object
     HEADERONLY_INLINE Application(const char *name="OpenGP Application");
 
+    /// Start the application
     HEADERONLY_INLINE int run();
 
+    /// Open a new window as part of the application
     HEADERONLY_INLINE Window &create_window(std::function<void(Window&)> display_callback);
 
+    /// @brief Provide a callback to be executed every frame
+    /// @deprecated use `ApplicationUpdateEvent` instead
     HEADERONLY_INLINE void set_update_callback(std::function<void()> fn);
 
+    /// Set the application's close flag
     HEADERONLY_INLINE void close();
 
 };
