@@ -79,6 +79,7 @@ public:
         shader.add_vshader_from_source(vshader);
         shader.add_fshader_from_source(fshader);
         shader.link();
+        init();
 
     }
 
