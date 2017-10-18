@@ -177,8 +177,10 @@ public:
         static_assert(Type == InputType::Type && Format == InputType::Format, "Incompatible Image and texture types");
 
         int width, height;
+        bind();
         glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
         glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+        unbind();
 
         image.resize(height, width);
 
