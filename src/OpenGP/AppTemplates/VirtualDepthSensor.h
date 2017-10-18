@@ -84,7 +84,7 @@ public:
 
         float aspect = (float)width / (float)height;
         float y = std::tan(camera.vfov * M_PI / 360);
-        transform.set_scale(0.2 * Vec3(y * aspect, y, 1));
+        transform.set_scale(0.2 * Vec3(y * aspect * 1.01, y * 1.01, 1));
 
         depthmap->clear();
 
