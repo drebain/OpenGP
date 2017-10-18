@@ -179,6 +179,8 @@ public:
 
         auto vpoint = mesh.get_vertex_property<Vec4>("v:point");
 
+        glEnable(GL_DEPTH_TEST);
+
         sphere.set_attributes(shader);
 
         Mat4x4 model, V, P, VP;
