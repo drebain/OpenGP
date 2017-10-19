@@ -24,7 +24,7 @@ private:
 
     Shader sphere_shader, cone_shader, triangle_shader;
 
-    int sphere_count = 0, edge_count = 0, face_count = 0;
+    int sphere_count = 0, cone_count = 0;
 
     const float PI = 3.141592653589793238462643383;
 
@@ -36,9 +36,6 @@ private:
 
     HEADERONLY_INLINE static const char *triangle_vshader();
     HEADERONLY_INLINE static const char *triangle_fshader();
-
-    // Local copy unitl proper GPU instancing
-    SphereMesh mesh;
 
 public:
 
