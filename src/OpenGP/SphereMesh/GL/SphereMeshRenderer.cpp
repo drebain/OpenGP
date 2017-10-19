@@ -14,8 +14,7 @@ namespace OpenGP {
 const char *SphereMeshRenderer::sphere_vshader() {
     return R"GLSL(
 
-        uniform vec3 sphere_pos;
-        uniform float sphere_radius;
+        in vec4 vsphere;
 
         in vec3 vposition;
         in vec3 vnormal;
@@ -24,7 +23,7 @@ const char *SphereMeshRenderer::sphere_vshader() {
         out vec3 fnormal;
 
         void vertex() {
-            vec3 real_pos = vposition * sphere_radius + sphere_pos;
+            vec3 real_pos = vposition * vsphere.w + vsphere.xyz;
             gl_Position = get_MVP() * vec4(real_pos, 1.0);
             fposition = (get_M() * vec4(real_pos, 1.0)).xyz;
             fnormal = normalize( inverse(transpose(mat3(get_M()))) * vnormal );
@@ -245,34 +244,7 @@ void SphereMeshRenderer::render(const RenderContext &context) {
     sphere.set_attributes(sphere_shader);
     update_shader(sphere_shader, context);
 
-    auto draw_sphere = [&](SphereMesh::Vertex v){
-
-        Vec4 point = vpoint[v];
-
-        Vec3 position = point.block<3, 1>(0, 0);
-        float radius = point(3);
-
-        sphere_shader.set_uniform("sphere_pos", position);
-        sphere_shader.set_uniform("sphere_radius", radius);
-
-        sphere.draw();
-
-    };
-
-    for (auto s : mesh.spheres()) {
-        draw_sphere(mesh.vertex(s));
-    }
-
-    for (auto e : mesh.edges()) {
-        draw_sphere(mesh.vertex(e, 0));
-        draw_sphere(mesh.vertex(e, 1));
-    }
-
-    for (auto f : mesh.faces()) {
-        draw_sphere(mesh.vertex(f, 0));
-        draw_sphere(mesh.vertex(f, 1));
-        draw_sphere(mesh.vertex(f, 2));
-    }
+    sphere.draw_instanced(sphere_count);
 
     sphere_shader.unbind();
 
@@ -433,6 +405,28 @@ void SphereMeshRenderer::rebuild() {
 void SphereMeshRenderer::upload_mesh(const SphereMesh &mesh) {
 
     this->mesh = mesh;
+
+    auto vpoint = mesh.get_vertex_property<Vec4>("v:point");
+
+    sphere_count = 0;
+    std::vector<Vec4> vsphere;
+    for (auto sphere : mesh.spheres()) {
+        vsphere.push_back(vpoint[mesh.vertex(sphere)]);
+        sphere_count++;
+    }
+    for (auto edge : mesh.edges()) {
+        vsphere.push_back(vpoint[mesh.vertex(edge, 0)]);
+        vsphere.push_back(vpoint[mesh.vertex(edge, 1)]);
+        sphere_count += 2;
+    }
+    for (auto face : mesh.faces()) {
+        vsphere.push_back(vpoint[mesh.vertex(face, 0)]);
+        vsphere.push_back(vpoint[mesh.vertex(face, 1)]);
+        vsphere.push_back(vpoint[mesh.vertex(face, 2)]);
+        sphere_count += 3;
+    }
+
+    sphere.set_vbo<Vec4>("vsphere", vsphere, 1);
 
 }
 

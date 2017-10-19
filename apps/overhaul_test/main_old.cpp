@@ -14,7 +14,6 @@
 #include <OpenGP/GL/ImguiRenderer.h>
 #include <OpenGP/GL/gl_debug.h>
 
-
 #if 0
 
 #define OPENGP_IMPLEMENT_ALL_IN_THIS_FILE
@@ -70,11 +69,11 @@ int main(int argc, char** argv){
 
         Mat4x4 proj = cam.get_projection();
         Mat4x4 view = cam.get_view();
-        Mat4x4 model = transform.get_matrix();
+        Mat4x4 model = transform.get_transformation_matrix();
 
         ImGuizmo::Manipulate(view.data(), proj.data(), op, ImGuizmo::WORLD, model.data());
 
-        transform.set_matrix(model);
+        transform.set_transformation_matrix(model);
 
         ImGui::BeginMainMenuBar();
         if (ImGui::BeginMenu("File")) {
@@ -95,7 +94,13 @@ int main(int argc, char** argv){
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("View")) {
-            ImGui::MenuItem("Wireframe", nullptr, &renderer.wireframe);
+            if (ImGui::MenuItem("Wireframe")) {
+                if (renderer.wireframe_mode == WireframeMode::Overlay) {
+                    renderer.wireframe_mode == WireframeMode::None;
+                } else {
+                    renderer.wireframe_mode == WireframeMode::Overlay;
+                }
+            }
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Help")) {

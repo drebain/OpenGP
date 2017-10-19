@@ -24,6 +24,8 @@ private:
 
     Shader sphere_shader, cone_shader, triangle_shader;
 
+    int sphere_count = 0, edge_count = 0, face_count = 0;
+
     const float PI = 3.141592653589793238462643383;
 
     HEADERONLY_INLINE static const char *sphere_vshader();

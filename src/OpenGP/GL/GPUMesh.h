@@ -25,7 +25,8 @@ private:
 
     VertexArrayObject vao;
 
-    std::unordered_map<std::string, std::unique_ptr<VectorArrayBuffer>> vbos;
+    // (attribute name) -> (buffer object, attribute divisor)
+    std::unordered_map<std::string, std::pair<std::unique_ptr<VectorArrayBuffer>, GLuint>> vbos;
 
     ElementArrayBuffer<unsigned int> triangles;
 
@@ -88,18 +89,21 @@ public:
     }
 
     template <typename T>
-    void set_vbo(const std::string &name, const std::vector<T> &data) {
-        set_vbo_raw<T>(name, &(data[0]), data.size());
+    void set_vbo(const std::string &name, const std::vector<T> &data, GLuint divisor = 0) {
+        set_vbo_raw<T>(name, &(data[0]), data.size(), divisor);
     }
 
     template <typename T>
-    void set_vbo_raw(const std::string &name, const void *data, GLsizeiptr num_elems) {
+    void set_vbo_raw(const std::string &name, const void *data, GLsizeiptr num_elems, GLuint divisor = 0) {
 
-        auto *buffer = dynamic_cast<ArrayBuffer<T>*>(vbos[name].get());
+        auto &pair = vbos[name];
+        auto *buffer = dynamic_cast<ArrayBuffer<T>*>(pair.first.get());
         if (buffer == nullptr) {
             buffer = new ArrayBuffer<T>();
-            vbos[name] = std::unique_ptr<VectorArrayBuffer>(buffer);
+            pair.first = std::unique_ptr<VectorArrayBuffer>(buffer);
         }
+
+        pair.second = divisor;
 
         vao.bind();
         buffer->upload_raw(data, num_elems);
@@ -132,8 +136,9 @@ public:
 
         for (auto &pair : vbos) {
             auto name = pair.first.c_str();
-            auto &buffer = *pair.second;
-            shader.set_attribute(name, buffer);
+            auto &buffer = *pair.second.first;
+            auto divisor = pair.second.second;
+            shader.set_attribute(name, buffer, divisor);
         }
 
         vao.unbind();
@@ -146,6 +151,18 @@ public:
         triangles.bind();
 
         glDrawElements(mode, element_count, GL_UNSIGNED_INT, 0);
+
+        triangles.unbind();
+        vao.unbind();
+
+    }
+
+    void draw_instanced(GLsizei instances) {
+
+        vao.bind();
+        triangles.bind();
+
+        glDrawElementsInstanced(mode, element_count, GL_UNSIGNED_INT, 0, instances);
 
         triangles.unbind();
         vao.unbind();
