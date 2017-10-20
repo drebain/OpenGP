@@ -26,6 +26,11 @@ public:
     /// Create a new empty scene
     Scene() {}
 
+    Scene(const Scene&) = delete;
+    Scene(Scene&&) = delete;
+    Scene &operator=(const Scene&) = delete;
+    Scene &operator=(Scene&&) = delete;
+
     /// Create a new entity within the scene
     HEADERONLY_INLINE Entity &create_entity();
 

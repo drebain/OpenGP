@@ -4,7 +4,10 @@
 
 #pragma once
 
+#include <vector>
+
 #include <OpenGP/util/Transform.h>
+#include <OpenGP/util/GenericIterable.h>
 #include <OpenGP/GL/Entity.h>
 
 
@@ -14,9 +17,41 @@ namespace OpenGP {
 
 /// A component representing the position, orientation and scale of an entity
 class TransformComponent : public Transform, public Component {
+private:
+
+    TransformComponent *parent = nullptr;
+
+    std::vector<TransformComponent*> children;
+
 public:
 
-    // TODO: add parent + children here to make actual scene graph
+    Transform world() const {
+        if (parent == nullptr) {
+            return Transform(*this);
+        }
+        auto base = parent->world();
+        base.apply_transformation(*this);
+        return base;
+    }
+
+    TransformComponent *get_parent() {
+        return parent;
+    }
+
+    const TransformComponent *get_parent() const {
+        return parent;
+    }
+
+    GenericIterable<TransformComponent> get_children() {
+
+        // TODO: add const version
+
+        auto map_pred = [](TransformComponent *tc) {
+            return tc;
+        };
+
+        return GenericIterable<TransformComponent*>::adaptor(children).map(map_pred);
+    }
 
 };
 
