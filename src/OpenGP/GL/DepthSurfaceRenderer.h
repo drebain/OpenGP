@@ -20,6 +20,7 @@ private:
     Shader shader;
 
     const GenericTexture *depth_texture = nullptr;
+    Mat4x4 sensor_matrix_inv;
 
     GLuint width = 0, height = 0;
 
@@ -35,6 +36,7 @@ public:
     virtual ~DepthSurfaceRenderer() {}
 
     HEADERONLY_INLINE void set_depth_texture(const GenericTexture &texture);
+    HEADERONLY_INLINE void set_sensor_matrix(const Mat4x4 &sensor_matrix);
 
     HEADERONLY_INLINE void render(const RenderContext&);
 

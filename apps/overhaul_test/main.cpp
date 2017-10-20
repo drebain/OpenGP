@@ -31,6 +31,7 @@ public:
         auto &depth_surface = scene.create_entity_with<WorldRenderComponent>();
         auto &depth_surface_renderer = depth_surface.set_renderer<DepthSurfaceRenderer>();
         depth_surface_renderer.set_depth_texture(sensor->get_depthmap()->get_depth_texture());
+        depth_surface_renderer.set_sensor_matrix(sensor->get<CameraComponent>().get_projection(sensor->width, sensor->height));
 
         bunny.get<TransformComponent>().position = Vec3(0, 0, 0);
         main_camera->get<TransformComponent>().position = Vec3(1, 1, 1);

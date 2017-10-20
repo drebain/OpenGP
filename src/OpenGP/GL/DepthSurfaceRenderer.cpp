@@ -15,15 +15,20 @@ const char *DepthSurfaceRenderer::vshader() {
 
         uniform sampler2D depth_texture;
 
+        uniform mat4 sensor_matrix_inv;
+
         in vec3 vposition;
 
         out vec3 fposition;
         out vec3 fnormal;
 
         void vertex() {
-            float depth = texture(depth_texture, vposition.xy).r;
-            float depth_px = textureOffset(depth_texture, vposition.xy, ivec2(1, 0)).r;
-            float depth_py = textureOffset(depth_texture, vposition.xy, ivec2(0, 1)).r;
+            // TODO: deproject points and calculate normals
+
+            vec2 uv = (vposition.xy + vec2(1, 1)) / 2;
+            float depth = texture(depth_texture, uv).r;
+            float depth_px = textureOffset(depth_texture, uv, ivec2(1, 0)).r;
+            float depth_py = textureOffset(depth_texture, uv, ivec2(0, 1)).r;
 
             vec2 tex_size = vec2(textureSize(depth_texture, 0));
 
@@ -69,8 +74,8 @@ void DepthSurfaceRenderer::rebuild_mesh() {
     for (GLuint i = 0;i < width;i++) {
         for (GLuint j = 0;j < height;j++) {
 
-            float x = (float)i / (float)(width - 1);
-            float y = (float)j / (float)(height - 1);
+            float x = 2 * (float)i / (float)(width - 1) - 1;
+            float y = 2 * (float)j / (float)(height - 1) - 1;
             Vec3 vert(x, y, 0);
             vposition.push_back(vert);
             if (i > 0 && j > 0) {
@@ -107,6 +112,13 @@ void DepthSurfaceRenderer::set_depth_texture(const GenericTexture &texture) {
 
 }
 
+void DepthSurfaceRenderer::set_sensor_matrix(const Mat4x4 &sensor_matrix) {
+    this->sensor_matrix_inv = sensor_matrix.inverse();
+    shader.bind();
+    shader.set_uniform("sensor_matrix_inv", sensor_matrix_inv);
+    shader.unbind();
+}
+
 void DepthSurfaceRenderer::render(const RenderContext &context) {
 
     shader.bind();
@@ -135,6 +147,7 @@ void DepthSurfaceRenderer::rebuild() {
     shader.bind();
     gpu_mesh.set_attributes(shader);
     shader.set_uniform("depth_texture", 0);
+    shader.set_uniform("sensor_matrix_inv", sensor_matrix_inv);
     shader.unbind();
 
 }
