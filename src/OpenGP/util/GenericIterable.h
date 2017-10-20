@@ -16,12 +16,14 @@ template <typename T>
 class GenericIterable {
 public:
 
-    using Advancer = std::function<T*()>;
+    using value_type = typename std::remove_reference<T>::type;
+
+    using Advancer = std::function<value_type*()>;
 
     class Iterator {
     private:
 
-        T *ptr;
+        value_type *ptr;
 
         Advancer advancer;
 
@@ -32,7 +34,7 @@ public:
             ptr = this->advancer();
         }
 
-        T &operator*() { return *ptr; }
+        value_type &operator*() { return *ptr; }
 
         bool operator==(const Iterator &rhs) const {
             return ptr == rhs.ptr;
@@ -102,17 +104,18 @@ public:
         return new_iterable;
     }
 
-    template <typename Predicate>
-    GenericIterable<typename std::remove_pointer<typename std::result_of<Predicate(T&)>::type>::type> map(Predicate predicate) {
 
-        using ResultPointerType = typename std::result_of<Predicate(T&)>::type;
-        using ResultValueType = typename std::remove_pointer<ResultPointerType>::type;
-        
+    /// Perform a map transformation @note predicate must return a pointer
+    template <typename Predicate>
+    GenericIterable<typename std::remove_reference<typename std::remove_pointer<typename std::result_of<Predicate(T&)>::type>::type>::type> map(Predicate predicate) {
+
+        using ResultValueType = typename std::remove_reference<typename std::remove_pointer<typename std::result_of<Predicate(T&)>::type>::type>::type;
+
         Advancer advancer = base_advancer;
         GenericIterable<ResultValueType> new_iterable([predicate, advancer](){
-            T *ptr = advancer();
+            value_type *ptr = advancer();
             if (ptr == nullptr) {
-                return (ResultPointerType)nullptr;
+                return (ResultValueType*)nullptr;
             } else {
                 return predicate(*ptr);
             }
