@@ -25,13 +25,12 @@ private:
 
 public:
 
-    Transform world() const {
+    Mat4x4 world_matrix() const {
         if (parent == nullptr) {
-            return Transform(*this);
+            return get_transformation_matrix();
         }
-        auto base = parent->world();
-        base.apply_transformation(*this);
-        return base;
+        auto base = parent->world_matrix();
+        return base * get_transformation_matrix();
     }
 
     TransformComponent *get_parent() {

@@ -74,17 +74,6 @@ public:
         scale = t.scale;
     }
 
-    void apply_transformation_matrix(const Mat4x4 &mat) {
-        auto t = decompose_matrix(mat);
-        apply_transformation(t);
-    }
-
-    void apply_transformation(const Transform &t) {
-        apply_translation(t.position);
-        apply_rotation(t.rotation);
-        apply_scale(t.scale);
-    }
-
     Mat4x4 get_translation_matrix() const {
 
         Mat4x4 t = Mat4x4::Identity();
