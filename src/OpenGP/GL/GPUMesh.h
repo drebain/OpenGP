@@ -90,6 +90,7 @@ public:
 
     template <typename T>
     void set_vbo(const std::string &name, const std::vector<T> &data, GLuint divisor = 0) {
+        if (data.size() == 0) return;
         set_vbo_raw<T>(name, &(data[0]), data.size(), divisor);
     }
 
