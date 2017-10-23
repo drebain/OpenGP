@@ -20,10 +20,7 @@ public:
     /// The current operation mode of the gizmo
     ImGuizmo::OPERATION operation = ImGuizmo::TRANSLATE;
 
-    void init() {
-        auto &transform = require<TransformComponent>();
-        transform.scale = Vec3(0.1, 0.1, 0.2);
-    }
+    void init() {}
 
     /// Handler for gui events that creates the gizmo UI element
     void on_gui(const GUIElementDrawEvent &event) {

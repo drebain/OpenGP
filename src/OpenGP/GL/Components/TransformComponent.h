@@ -43,13 +43,20 @@ public:
 
     GenericIterable<TransformComponent> get_children() {
 
-        // TODO: add const version
-
         auto map_pred = [](TransformComponent *tc) {
             return tc;
         };
 
         return GenericIterable<TransformComponent*>::adaptor(children).map(map_pred);
+    }
+
+    GenericIterable<const TransformComponent> get_children() const {
+
+        auto map_pred = [](TransformComponent *tc) -> const TransformComponent* {
+            return tc;
+        };
+
+        return GenericIterable<TransformComponent *const>::adaptor(children).map(map_pred);
     }
 
 };

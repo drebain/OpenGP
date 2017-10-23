@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <OpenGP/GL/Scene.h>
 #include <OpenGP/GL/Entity.h>
 #include <OpenGP/GL/Components/WorldRenderComponent.h>
 #include <OpenGP/GL/Components/TransformComponent.h>
