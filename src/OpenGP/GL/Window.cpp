@@ -194,7 +194,7 @@ void Window::release_keyboard() {
     input.keyboard_captured = false;
 }
 
-void Window::mouse_button_callback(GLFWwindow *handle, int button, int action, int mods) {
+void Window::mouse_button_callback(GLFWwindow *handle, int button, int action, int /*mods*/) {
 
     wrapper(handle).input_actions.push_back([=](){
 
@@ -226,7 +226,7 @@ void Window::mouse_position_callback(GLFWwindow *handle, double x, double y) {
     });
 }
 
-void Window::mouse_enter_callback(GLFWwindow *handle, int entered) {
+void Window::mouse_enter_callback(GLFWwindow */*handle*/, int /*entered*/) {
     //wrapper(handle).send_event(event);
 }
 
@@ -243,7 +243,7 @@ void Window::mouse_scroll_callback(GLFWwindow *handle, double dx, double dy) {
     });
 }
 
-void Window::key_callback(GLFWwindow *handle, int key, int scancode, int action, int mods) {
+void Window::key_callback(GLFWwindow *handle, int key, int /*scancode*/, int action, int /*mods*/) {
 
     wrapper(handle).input_actions.push_back([=](){
 

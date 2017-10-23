@@ -88,7 +88,6 @@ public:
 
         depthmap->clear();
 
-        Vec3 target = transform.position + transform.forward();
         Mat4x4 view = camera.get_view();
         Mat4x4 projection = camera.get_projection(width, height);
 
