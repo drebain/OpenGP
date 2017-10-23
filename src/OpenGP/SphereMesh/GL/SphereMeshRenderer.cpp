@@ -70,7 +70,9 @@ const char *SphereMeshRenderer::cone_vshader() {
             vec3 saxis = v1.xyz - v0.xyz;
             float l = length(saxis);
             saxis /= l;
-            vec3 ihat = normalize(cross(saxis, saxis + vec3(1,0,0)));
+            vec3 a = cross(saxis, vec3(1, 0, 0));
+            vec3 b = cross(saxis, vec3(0, 1, 0));
+            vec3 ihat = normalize(a + b);
             vec3 jhat = cross(saxis, ihat);
 
             float beta = asin((v1.w - v0.w) / l);
@@ -327,15 +329,7 @@ void SphereMeshRenderer::upload_mesh(const SphereMesh &mesh) {
         Scalar r1 = s1(3);
         Scalar r2 = s2(3);
 
-        Vec3 sn = (p2 - p0).cross(p1 - p0).normalized();
-
-        Vec2 ta, tb;
-        Vec3 ms_tangent_a, ms_tangent_b, tn;
-        ta = pill_tangent(s0, s1);
-        tb = pill_tangent(s0, s2);
-        ms_tangent_a = ta(0) * (p1 - p0).normalized() - ta(1) * sn;
-        ms_tangent_b = tb(0) * (p2 - p0).normalized() - tb(1) * sn;
-        tn = ms_tangent_a.cross(ms_tangent_b).normalized();
+        Vec3 tn = wedge_normal(s0, s1, s2, 0);
 
         // tangent point 0
         Vec3 t0 = p0 + r0 * tn;
@@ -356,9 +350,7 @@ void SphereMeshRenderer::upload_mesh(const SphereMesh &mesh) {
         tri_elements.push_back(element_count++);
         tri_elements.push_back(element_count++);
 
-        ms_tangent_a = ta(0) * (p1 - p0).normalized() + ta(1) * sn;
-        ms_tangent_b = tb(0) * (p2 - p0).normalized() + tb(1) * sn;
-        tn = ms_tangent_b.cross(ms_tangent_a).normalized();
+        tn = wedge_normal(s0, s1, s2, 1);
 
         // tangent point 0
         t0 = p0 + r0 * tn;
