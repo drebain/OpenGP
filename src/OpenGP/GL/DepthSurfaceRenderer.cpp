@@ -11,35 +11,33 @@ namespace OpenGP {
 
 // vshader code
 const char *DepthSurfaceRenderer::vshader() {
-    return R"GLSL(
+	return R"GLSL(
 
         uniform sampler2D depth_texture;
 
         uniform mat4 sensor_matrix_inv;
+		uniform float zfar;
 
         in vec3 vposition;
 
         out vec3 fposition;
-        out vec3 fnormal;
+		out float do_discard;
 
         void vertex() {
-            // TODO: deproject points and calculate normals
-
             vec2 uv = (vposition.xy + vec2(1, 1)) / 2;
             float depth = texture(depth_texture, uv).r;
-            float depth_px = textureOffset(depth_texture, uv, ivec2(1, 0)).r;
-            float depth_py = textureOffset(depth_texture, uv, ivec2(0, 1)).r;
 
-            vec2 tex_size = vec2(textureSize(depth_texture, 0));
+			do_discard = 0.0;
+			if (depth == zfar) do_discard = 1.0;
 
-            vec3 v_center = vposition + vec3(0, 0, depth);
-            vec3 v_px = vposition + vec3(1 / tex_size.x, 0, depth_px);
-            vec3 v_py = vposition + vec3(0, 1 / tex_size.y, depth_py);
+			vec3 pos = vec3((sensor_matrix_inv * vec4(vposition, 1)).xy * depth, depth);			
 
-            gl_Position = get_MVP() * vec4(v_center, 1.0);
-            fposition = (get_M() * vec4(vposition, 1.0)).xyz;
-            vec3 vnormal = normalize(cross(v_px - v_center, v_py - v_center));
-            fnormal = normalize( inverse(transpose(mat3(get_M()))) * vnormal );
+            //gl_Position = get_MV() * vec4(pos, 1.0);
+			//if (depth == zfar) gl_Position.z = -zfar;
+            //gl_Position = get_P() * gl_Position;
+            
+			gl_Position = get_MVP() * vec4(pos, 1.0);
+            fposition = (get_M() * vec4(pos, 1.0)).xyz;
         }
 
     )GLSL";
@@ -47,13 +45,24 @@ const char *DepthSurfaceRenderer::vshader() {
 
 // fshader code
 const char *DepthSurfaceRenderer::fshader() {
-    return R"GLSL(
+	return R"GLSL(
 
-        in vec3 fnormal;
+        uniform sampler2D depth_texture;
+
         in vec3 fposition;
+		in float do_discard;
 
         void fragment() {
-            set_normal(normalize(fnormal));
+			if (do_discard > 0.0) discard;
+			vec3 vx = dFdx(fposition);
+			vec3 vy = dFdy(fposition);   
+			vec3 n = normalize(cross(vx,vy));
+
+			//vec3 vray = normalize( fposition );
+			//float cosalpha = abs( dot(n, vec3(0.0, 0.0, -1.0)) );
+			//if( cosalpha < 0.1 ) discard;
+
+            set_normal(n);
             set_position(fposition);
             set_wire_weight(0);
         }
@@ -119,6 +128,13 @@ void DepthSurfaceRenderer::set_sensor_matrix(const Mat4x4 &sensor_matrix) {
     shader.unbind();
 }
 
+void DepthSurfaceRenderer::set_zfar(float zfar) {
+	this->zfar = zfar;
+	shader.bind();
+	shader.set_uniform("zfar", this->zfar);
+	shader.unbind();
+}
+
 void DepthSurfaceRenderer::render(const RenderContext &context) {
 
     shader.bind();
@@ -147,9 +163,9 @@ void DepthSurfaceRenderer::rebuild() {
     shader.bind();
     gpu_mesh.set_attributes(shader);
     shader.set_uniform("depth_texture", 0);
-    shader.set_uniform("sensor_matrix_inv", sensor_matrix_inv);
+	shader.set_uniform("sensor_matrix_inv", sensor_matrix_inv);
+	shader.set_uniform("zfar", zfar);
     shader.unbind();
-
 }
 
 GPUMesh &DepthSurfaceRenderer::get_gpu_mesh() {
