@@ -2,6 +2,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+#pragma once
+
 #include <librealsense2/rs.hpp>
 
 #include <OpenGP/RGBD/Stream.h>
@@ -28,7 +30,7 @@ inline SensorDevice get_realsense_device() {
         auto &name = profile.stream_name();
 
         stream_data_ptrs[name] = nullptr;
-        streams[pname] = SensorStream(&stream_data_ptrs.at(name), intrinsics, extrinsics);
+        streams[name] = SensorStream(&stream_data_ptrs.at(name), intrinsics, extrinsics);
 
     }
 
@@ -37,12 +39,12 @@ inline SensorDevice get_realsense_device() {
         rs2::frameset data;
 
         if (block) {
-            data = pipline.wait_for_frames();
+            data = pipeline.wait_for_frames();
         } else if (!pipeline.poll_for_frames(&data)) {
             return false;
         }
 
-        for (auto &frame : data) {
+        for (auto frame : data) {
             auto &name = frame.get_profile().stream_name();
             stream_data_ptrs.at(name) = frame.get_data();
         }
