@@ -22,6 +22,7 @@ inline SensorDevice get_realsense_device() {
     pipeline.start();
 
     std::unordered_map<std::string, SensorStream> streams;
+    
     std::shared_ptr<std::unordered_map<std::string, void*>> stream_data_ptrs(new std::unordered_map<std::string, void*>());
 
     for (auto profile : pipeline.get_active_profile().get_streams()) {
