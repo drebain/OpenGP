@@ -9,10 +9,11 @@
 namespace OpenGP {
 //=============================================================================
 
-SensorStream::SensorStream(const void **data_ptr, const StreamIntrinsics &intrinsics, const StreamExtrinsics &extrinsics) :
+SensorStream::SensorStream(const char *name, const void **data_ptr, const StreamIntrinsics &intrinsics, const StreamExtrinsics &extrinsics) :
     data_ptr(data_ptr),
     intrinsics(intrinsics),
-    extrinsics(extrinsics) {}
+    extrinsics(extrinsics),
+    name(name) {}
 
 const void *SensorStream::get_data() const {
     return *data_ptr;

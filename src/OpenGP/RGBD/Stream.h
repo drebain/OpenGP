@@ -5,6 +5,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <string>
 
 #include <OpenGP/headeronly.h>
 #include <OpenGP/types.h>
@@ -34,14 +35,18 @@ private:
     StreamIntrinsics intrinsics;
     StreamExtrinsics extrinsics;
 
+    std::string name;
+
 public:
 
-    HEADERONLY_INLINE SensorStream(const void **data_ptr, const StreamIntrinsics &intrinsics, const StreamExtrinsics &extrinsics);
+    HEADERONLY_INLINE SensorStream(const char *name, const void **data_ptr, const StreamIntrinsics &intrinsics, const StreamExtrinsics &extrinsics);
 
     HEADERONLY_INLINE const void *get_data() const;
 
     const StreamIntrinsics &get_intrinsics() const { return intrinsics; }
     const StreamExtrinsics &get_extrinsics() const { return extrinsics; }
+
+    const char *get_name() const { return name.c_str(); }
 
 };
 

@@ -23,7 +23,7 @@ inline SensorDevice get_realsense_device() {
 
     std::unordered_map<std::string, SensorStream> streams;
 
-    std::shared_ptr<std::unordered_map<std::string, void*>> stream_data_ptrs(new std::unordered_map<std::string, void*>());
+    std::shared_ptr<std::unordered_map<std::string, const void*>> stream_data_ptrs(new std::unordered_map<std::string, const void*>());
 
     for (auto profile : pipeline.get_active_profile().get_streams()) {
 
@@ -33,7 +33,11 @@ inline SensorDevice get_realsense_device() {
         auto name = profile.stream_name();
 
         (*stream_data_ptrs)[name] = nullptr;
-        streams[name] = SensorStream(&stream_data_ptrs->at(name), intrinsics, extrinsics);
+        streams.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(name),
+            std::forward_as_tuple(name.c_str(), const_cast<const void**>(&stream_data_ptrs->at(name)), intrinsics, extrinsics)
+        );
 
     }
 
@@ -49,7 +53,7 @@ inline SensorDevice get_realsense_device() {
 
         for (auto frame : data) {
             auto name = frame.get_profile().stream_name();
-            (*stream_data_ptrs)[name] = frame.get_data();
+            (*stream_data_ptrs)[name] = const_cast<const void*>(frame.get_data());
         }
 
         return true;
