@@ -50,6 +50,9 @@ private:
 
 public:
 
+    template <typename Iterable>
+    SensorDevice(const Iterable &pairs) : streams(pairs.begin(), pairs.end()) {}
+
     HEADERONLY_INLINE const SensorStream &get_stream(const char *name) const;
 
     HEADERONLY_INLINE GenericIterable<const SensorStream> get_streams() const;
