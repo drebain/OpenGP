@@ -27,16 +27,16 @@ struct StreamExtrinsics {
 class SensorStream {
 private:
 
-    std::function<const void*(bool)> data_callback;
+    const void **data_ptr;
 
     StreamIntrinsics intrinsics;
     StreamExtrinsics extrinsics;
 
 public:
 
-    HEADERONLY_INLINE SensorStream(std::function<const void*(bool)> data_callback, const StreamIntrinsics &intrinsics, const StreamExtrinsics &extrinsics);
+    HEADERONLY_INLINE SensorStream(const void **data_ptr, const StreamIntrinsics &intrinsics, const StreamExtrinsics &extrinsics);
 
-    HEADERONLY_INLINE const void *get_data(bool block=true) const;
+    HEADERONLY_INLINE const void *get_data() const;
 
     const StreamIntrinsics &get_intrinsics() const { return intrinsics; }
     const StreamExtrinsics &get_extrinsics() const { return extrinsics; }
@@ -48,10 +48,17 @@ private:
 
     std::unordered_map<std::string, SensorStream> streams;
 
+    std::function<bool(bool)> advance_frame_callback;
+
 public:
 
     template <typename Iterable>
-    SensorDevice(const Iterable &pairs) : streams(pairs.begin(), pairs.end()) {}
+    SensorDevice(const Iterable &pairs, std::function<bool(bool)> advance_frame_callback) :
+        streams(pairs.begin(), pairs.end()),
+        advance_frame_callback(advance_frame_callback) {}
+
+    HEADERONLY_INLINE void advance_frame();
+    HEADERONLY_INLINE bool try_advance_frame();
 
     HEADERONLY_INLINE const SensorStream &get_stream(const char *name) const;
 

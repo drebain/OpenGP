@@ -9,14 +9,23 @@
 namespace OpenGP {
 //=============================================================================
 
-SensorStream::SensorStream(std::function<const void*(bool)> data_callback, const StreamIntrinsics &intrinsics, const StreamExtrinsics &extrinsics) :
-    data_callback(data_callback),
+SensorStream::SensorStream(const void **data_ptr, const StreamIntrinsics &intrinsics, const StreamExtrinsics &extrinsics) :
+    data_ptr(data_ptr),
     intrinsics(intrinsics),
     extrinsics(extrinsics) {}
 
-const void *SensorStream::get_data(bool block) const {
-    return data_callback(block);
+const void *SensorStream::get_data() const {
+    return *data_ptr;
 }
+
+void SensorDevice::advance_frame() {
+    advance_frame_callback(true);
+}
+
+bool SensorDevice::try_advance_frame() {
+    return advance_frame_callback(false);
+}
+
 
 const SensorStream &SensorDevice::get_stream(const char *name) const {
     return streams.at(name);
