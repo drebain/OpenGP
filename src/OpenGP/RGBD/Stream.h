@@ -30,7 +30,7 @@ struct StreamExtrinsics {
 class SensorStream {
 private:
 
-    const void **data_ptr;
+    const void *const *data_ptr;
 
     StreamIntrinsics intrinsics;
     StreamExtrinsics extrinsics;
@@ -39,7 +39,7 @@ private:
 
 public:
 
-    HEADERONLY_INLINE SensorStream(const char *name, const void **data_ptr, const StreamIntrinsics &intrinsics, const StreamExtrinsics &extrinsics);
+    HEADERONLY_INLINE SensorStream(const char *name, const void *const *data_ptr, const StreamIntrinsics &intrinsics, const StreamExtrinsics &extrinsics);
 
     HEADERONLY_INLINE const void *get_data() const;
 

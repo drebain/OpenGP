@@ -173,8 +173,9 @@ public:
     template <typename ImageType>
     void download(ImageType &image) {
 
-        using InputType = typename TextureTypeBuilder<ImageType>::Type;
-        static_assert(Type == InputType::Type && Format == InputType::Format, "Incompatible Image and texture types");
+        //using InputType = typename TextureTypeBuilder<ImageType>::Type;
+        //static_assert(Type == InputType::Type && Format == InputType::Format, "Incompatible Image and texture types");
+        // TODO: find better compatibility test
 
         int width, height;
         bind();
