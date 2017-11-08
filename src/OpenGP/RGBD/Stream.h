@@ -10,6 +10,7 @@
 #include <OpenGP/headeronly.h>
 #include <OpenGP/types.h>
 #include <OpenGP/util/GenericIterable.h>
+#include <OpenGP/util/cuda_support.h>
 
 
 //=============================================================================
@@ -20,6 +21,13 @@ struct StreamIntrinsics {
     int width, height;
     Vec2 pixel_center;
     Vec2 focal_length;
+
+    template <typename Scalar>
+    OPENGP_DEVICE_FUNC Vec3 unproject(int i, int j, Scalar depth) {
+        Scalar x = (i - pixel_center(0)) / focal_length(0);
+        Scalar y = (j - pixel_center(1)) / focal_length(1);
+        return depth * Vec3(x, y, 1);
+    }
 };
 
 struct StreamExtrinsics {
