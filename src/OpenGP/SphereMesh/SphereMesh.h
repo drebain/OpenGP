@@ -80,7 +80,7 @@ public:
     public:
 
         /// Construct an iterator over `SphereMesh` m starting at element h
-        HandleIterator(H h=H(0), const SphereMesh *m=nullptr) : handle(h), mesh(m) {}
+        HandleIterator(H h=H(0), const SphereMesh *m=nullptr) : mesh(m), handle(h) {}
 
         /// Get the handle that the iterator refers to
         H operator*() const { return handle; }

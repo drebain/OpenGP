@@ -9,6 +9,7 @@
 #include <OpenGP/GL/Window.h>
 #include <OpenGP/GL/SyntheticDepthmap.h>
 #include <OpenGP/SurfaceMesh/GL/SurfaceMeshRenderer.h>
+#include <OpenGP/RGBD/Stream.h>
 
 #include <OpenGP/GL/Components/TrackballComponent.h>
 #include <OpenGP/GL/Components/GUICanvasComponent.h>
@@ -27,6 +28,11 @@ private:
     std::unique_ptr<RGB8Texture> color_texture;
 
     FullscreenQuad fsq;
+
+    Image<uint16_t> depth_buffer;
+    void *depth_data;
+    Image<Eigen::Matrix<uint8_t, 3, 1>> color_buffer;
+    void *color_data;
 
 public:
 
@@ -67,9 +73,15 @@ public:
         depthmap.reset();
         depthmap = std::unique_ptr<SyntheticDepthmap>(new SyntheticDepthmap(width, height));
 
+        depth_buffer.resize(height, width);
+        depth_data = depth_buffer.data();
+
         color_texture.reset();
         color_texture = std::unique_ptr<RGB8Texture>(new RGB8Texture());
         color_texture->allocate(width, height);
+
+        color_buffer.resize(height, width);
+        color_data = color_buffer.data();
 
         color.reset();
         color = std::unique_ptr<Framebuffer>(new Framebuffer());
@@ -88,7 +100,6 @@ public:
 
         depthmap->clear();
 
-        Vec3 target = transform.position + transform.forward();
         Mat4x4 view = camera.get_view();
         Mat4x4 projection = camera.get_projection(width, height);
 
@@ -128,6 +139,34 @@ public:
 
     RGB8Texture* get_color_texture() {
         return color_texture.get();
+    }
+
+    SensorDevice get_device() {
+
+        StreamIntrinsics color_intrinsics, depth_intrinsics; // TODO
+        StreamExtrinsics color_extrinsics, depth_extrinsics; // TODO
+
+        std::unordered_map<std::string, SensorStream> streams;
+        streams.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple("Color"),
+            std::forward_as_tuple("Color", &color_data, color_intrinsics, color_extrinsics)
+        );
+        streams.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple("Depth"),
+            std::forward_as_tuple("Depth", &depth_data, depth_intrinsics, depth_extrinsics)
+        );
+
+        return SensorDevice(streams, [this](bool block){
+
+            get_color_texture()->download(color_buffer);
+            get_depthmap()->get_depth_texture().download(depth_buffer);
+
+            return true;
+
+        });
+
     }
 
 };

@@ -9,7 +9,7 @@
 #include <OpenGP/util/implementations.h>
 
 using namespace OpenGP;
-int main(int argc, char** argv){
+int main(int /*argc*/, char** /*argv*/){
 
     Application app;
 

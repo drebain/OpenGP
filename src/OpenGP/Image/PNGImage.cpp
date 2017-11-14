@@ -127,7 +127,7 @@ void PNGReader::read(const ReadFunction &read_function) {
                     int_val |= row_ptrs(row)[start_idx + i];
                 }
 
-                double val = ((double)int_val) / (((uint64_t)0x1) << bit_depth);
+                double val = ((double)int_val) / ((((uint64_t)0x1) << bit_depth) - 1);
                 read_function(row, col, c, val);
             }
         }
