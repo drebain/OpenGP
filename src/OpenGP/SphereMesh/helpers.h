@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <OpenGP/util/cuda_support.h>
 #include <OpenGP/SphereMesh/SphereMesh.h>
 
 
@@ -24,7 +25,6 @@ inline Vec2 pill_tangent(const Vec4 &s0_3D, const Vec4 &s1_3D) {
     Scalar a2 = (a(0)*a(0)) + (a(1)*a(1));
     Scalar ad = std::sqrt(a2);
     Vec2 ab = a.block<2, 1>(0, 0);
-    Vec2 an = ab / ad;
 
     Scalar beta = ab.dot(Vec2(std::sqrt((ad*ad)-(a(2)*a(2))), a(2))) / (ad * ad);
     Scalar alpha = std::sqrt(1 - (beta * beta));
@@ -49,43 +49,77 @@ inline Vec3 get_barycentric(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 p) {
     return Vec3(u, v, w);
 }
 
-inline Vec3 wedge_normal(const Vec4 &s0, const Vec4 &s1, const Vec4 &s2, bool flipped) {
+OPENGP_DEVICE_FUNC inline float stop_nan(float t) {
+    return (std::isinf(t) || std::isnan(t)) ? 0 : t;
+}
 
-    Vec3 c0 = s0.head<3>();
-    Vec3 c1 = s1.head<3>();
-    Vec3 c2 = s2.head<3>();
+OPENGP_DEVICE_FUNC inline float clamp01(float t) {
+    return std::fmax(std::fmin(t, 1), 0);
+}
 
-    Vec4 a0 = s1 - s0;
-    Vec4 a1 = s2 - s0;
+OPENGP_DEVICE_FUNC inline Vec3 wedge_normal(const Vec4 &s0, const Vec4 &s1, const Vec4 &s2) {
 
-    Vec3 d0 = a0.head<3>();
-    Vec3 d1 = a1.head<3>();
+    Vec3 c0c1 = s1.head<3>() - s0.head<3>();
+    Vec3 c0c2 = s2.head<3>() - s0.head<3>();
 
-    float l0 = d0.norm();
-    float l1 = d1.norm();
+    float beta = std::asin((s2(3) - s0(3)) / c0c2.norm());
 
-    float beta = std::asin(a1(3) / l1);
+    Vec3 n_tri = c0c1.cross(c0c2).normalized();
+    Vec3 a = -c0c2.normalized();
+    Vec3 b = a.cross(n_tri);
 
-    Vec3 tri_normal = d0.cross(d1).normalized();
-    Vec3 A = -d1 / l1;
-    Vec3 S = A.cross(tri_normal);
+    float sb = std::sin(beta);
+    float cb = std::cos(beta);
 
-    float alpha = std::asin((s0(3) - s1(3) - std::sin(beta) * (c1 - c0).dot(A)) / (std::cos(beta) * (c1 - c0).dot(S)));
+    float alpha = std::asin((s0(3) - s1(3) - sb * c0c1.dot(a)) / (cb * c0c1.dot(b)));
 
-    Vec3 n = A * std::sin(beta) + std::cos(beta) * (tri_normal * std::cos(alpha) + S * std::sin(alpha));
+    float sa = std::sin(alpha);
+    float ca = std::cos(alpha);
 
-    if (flipped) n -= 2 * tri_normal * n.dot(tri_normal);
+    return a * sb + cb * (n_tri * ca + b * sa);
+}
 
-    return n;
+OPENGP_DEVICE_FUNC inline Vec3 wedge_normal_toward(const Vec4 &s0, const Vec4 &s1, const Vec4 &s2, const Vec3& p) {
+
+    Vec3 c0c1 = s1.head<3>() - s0.head<3>();
+    Vec3 c0c2 = s2.head<3>() - s0.head<3>();
+
+    float beta = std::asin((s2(3) - s0(3)) / c0c2.norm());
+
+    Vec3 n_tri = c0c1.cross(c0c2).normalized();
+    n_tri *= std::copysign(1.0f, n_tri.dot(p - s0.head<3>()));
+    Vec3 a = -c0c2.normalized();
+    Vec3 b = a.cross(n_tri);
+
+    float sb = std::sin(beta);
+    float cb = std::cos(beta);
+
+    float alpha = std::asin((s0(3) - s1(3) - sb * c0c1.dot(a)) / (cb * c0c1.dot(b)));
+
+    float sa = std::sin(alpha);
+    float ca = std::cos(alpha);
+
+    return a * sb + cb * (n_tri * ca + b * sa);
 
 }
 
-inline Vec3 pill_project(const Vec3 &p, const Vec4 &s0, const Vec4 &s1, float *sdf_out=nullptr) {
+OPENGP_DEVICE_FUNC inline Vec3 wedge_normal(const Vec4 &s0, const Vec4 &s1, const Vec4 &s2, bool flipped) {
+
+    Vec3 c0c1 = s1.head<3>() - s0.head<3>();
+    Vec3 c0c2 = s2.head<3>() - s0.head<3>();
+
+    Vec3 n_tri = c0c1.cross(c0c2);
+
+    Vec3 result = wedge_normal(s0, s1, s2);
+    if (flipped) result -= 2 * n_tri * n_tri.dot(result) / n_tri.squaredNorm();
+    return result;
+}
+
+OPENGP_DEVICE_FUNC inline Vec3 pill_project(const Vec3 &p, const Vec4 &s0, const Vec4 &s1, float *sdf_out=nullptr) {
 
     // Abbreviations
 
     Vec3 c0 = s0.head<3>();
-    Vec3 c1 = s1.head<3>();
 
     Vec4 a = s1 - s0;
 
@@ -124,6 +158,64 @@ inline Vec3 pill_project(const Vec3 &p, const Vec4 &s0, const Vec4 &s1, float *s
 
 }
 
+inline Vec4 pill_s2(const Vec3 &p, const Vec4 &s0, const Vec4 &s1) {
+        Vec3 c0 = s0.head<3>();
+        Vec4 a = s1 - s0;
+        Vec3 d = a.head<3>();
+        float l = d.norm();
+        Vec3 an = d / l;
+        Vec3 d2 = p - c0;
+        Vec3 p_proj = d2 - an * d2.dot(an);
+        float beta = std::asin(a(3) / l);
+        Vec3 offset = an * p_proj.norm() * std::tan(beta);
+        float t = an.dot(p + p_proj + offset - c0) / l;
+        t = std::max(std::min(t, 1.0f), 0.0f);
+        return (1 - t) * s0 + t * s1;
+}
+
+OPENGP_DEVICE_FUNC inline Vec3 wedge_project(const Vec3 &p, const Vec4 &s0, const Vec4 &s1, const Vec4 &s2, float *sdf_out=nullptr) {
+
+    Vec3 c1 = s1.head<3>();
+
+    Vec3 c0c1 = s1.head<3>() - s0.head<3>();
+    Vec3 c1c2 = s2.head<3>() - s1.head<3>();
+
+    Vec3 n_wedge = wedge_normal_toward(s0, s1, s2, p);
+    Vec3 n_plane = n_wedge.cross(p - s0.head<3>());
+
+    Vec3 c3 = c1 - c1c2 * c0c1.dot(n_plane) / c1c2.dot(n_plane);
+
+    float t = (c3 - c1).dot(c1c2) / c1c2.squaredNorm();
+    t = clamp01(stop_nan(t));
+
+    Vec4 s3 = (1 - t) * s1 + t * s2;
+
+    return pill_project(p, s0, s3, sdf_out);
+
+}
+
+inline Vec4 wedge_s3(const Vec3 &p, const Vec4 &s0, const Vec4 &s1, const Vec4 &s2) {
+
+    Vec3 c1 = s1.head<3>();
+
+    Vec3 c0c1 = s1.head<3>() - s0.head<3>();
+    Vec3 c1c2 = s2.head<3>() - s1.head<3>();
+
+    Vec3 n_wedge = wedge_normal_toward(s0, s1, s2, p);
+    Vec3 n_plane = n_wedge.cross(p - s0.head<3>());
+
+    Vec3 c3 = c1 - c1c2 * c0c1.dot(n_plane) / c1c2.dot(n_plane);
+
+    float t = (c3 - c1).dot(c1c2) / c1c2.squaredNorm();
+    t = clamp01(stop_nan(t));
+
+    Vec4 s3 = (1 - t) * s1 + t * s2;
+
+    return s3;
+
+}
+
+/*
 inline Vec3 wedge_project(const Vec3 &p, const Vec4 &s0, const Vec4 &s1, const Vec4 &s2, float *sdf_out=nullptr) {
 
     // Abbreviations
@@ -212,6 +304,7 @@ inline Vec3 wedge_project(const Vec3 &p, const Vec4 &s0, const Vec4 &s1, const V
     return best_proj;
 
 }
+*/
 
 //=============================================================================
 } // namespace OpenGP
