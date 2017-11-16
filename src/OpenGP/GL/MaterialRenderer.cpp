@@ -103,8 +103,8 @@ namespace {
         return R"GLSL(
 
             void main() {
-                vertex_shade();
                 vertex();
+                vertex_shade();
             }
 
         )GLSL";
@@ -134,8 +134,8 @@ namespace {
         return R"GLSL(
 
             void main() {
-                geometry_shade();
                 geometry();
+                geometry_shade();
             }
 
         )GLSL";
