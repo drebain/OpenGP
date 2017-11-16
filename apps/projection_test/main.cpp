@@ -16,7 +16,7 @@
 
 using namespace OpenGP;
 
-Vec3 sphere_mesh_project(const Vec3 &p, const SphereMesh &mesh, Vec4& s0_out, Vec4& s1_out, Vec4& s_out) {
+Vec3 sphere_mesh_project(const Vec3 &p, const SphereMesh &mesh) {
 
     auto vpoint = mesh.get_vertex_property<Vec4>("v:point");
 
@@ -33,9 +33,6 @@ Vec3 sphere_mesh_project(const Vec3 &p, const SphereMesh &mesh, Vec4& s0_out, Ve
         if (dist < best_dist) {
             best_dist = dist;
             best_proj = proj;
-
-            std::tie(s0_out, s1_out) = wedge_subpill(p, s0, s1, s2);
-            s_out = pill_s2(p, s0_out, s1_out);
         }
     }
 
@@ -48,9 +45,6 @@ Vec3 sphere_mesh_project(const Vec3 &p, const SphereMesh &mesh, Vec4& s0_out, Ve
         if (dist < best_dist) {
             best_dist = dist;
             best_proj = proj;
-            s0_out = s0;
-            s1_out = s1;
-            s_out = pill_s2(p, s0_out, s1_out);
         }
     }
 
@@ -80,12 +74,6 @@ int main(int argc, char **argv) {
     auto &smesh = scene.create_entity_with<WorldRenderComponent>();
     smesh.set_renderer<SphereMeshRenderer>().upload_mesh(mesh);
 
-    auto &pill_mesh = scene.create_entity_with<WorldRenderComponent>();
-    pill_mesh.set_renderer<SphereMeshRenderer>().get_material().set_property("base_color", Vec3(1, 0, 0));
-
-    auto &sphere_mesh = scene.create_entity_with<WorldRenderComponent>();
-    sphere_mesh.set_renderer<SphereMeshRenderer>().get_material().set_property("base_color", Vec3(0, 1, 0));
-
     auto &target = scene.create_entity_with<WorldRenderComponent>();
     target.set_renderer<SurfaceMeshRenderer>().upload_mesh(bmesh);
     auto &gizmo = target.require<GizmoComponent>();
@@ -107,28 +95,9 @@ int main(int argc, char **argv) {
 
     app.add_listener<ApplicationUpdateEvent>([&](const ApplicationUpdateEvent&){
 
-        Vec4 s0, s1, s;
-
-        Vec3 pos = sphere_mesh_project(target.get<TransformComponent>().position, mesh, s0, s1, s);;
+        Vec3 pos = sphere_mesh_project(target.get<TransformComponent>().position, mesh);
 
         projection.get<TransformComponent>().position = pos;
-
-        s0(3) *= 1.01;
-        s1(3) *= 1.01;
-        s(3) *= 1.02;
-
-        SphereMesh pill;
-        auto v0 = pill.add_vertex(s0);
-        auto v1 = pill.add_vertex(s1);
-        pill.add_edge(v0, v1);
-
-        pill_mesh.get_renderer<SphereMeshRenderer>().upload_mesh(pill);
-
-        SphereMesh sphere;
-        auto v = sphere.add_vertex(s);
-        sphere.add_sphere(v);
-
-        sphere_mesh.get_renderer<SphereMeshRenderer>().upload_mesh(sphere);
 
         scene.update();
     });
