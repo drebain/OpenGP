@@ -32,8 +32,8 @@ inline Vec2 pill_tangent(const Vec4 &s0_3D, const Vec4 &s1_3D) {
     return Vec2(beta, alpha);
 
 }
-
-inline Vec3 get_barycentric(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 p) {
+/*
+OPENGP_DEVICE_FUNC inline Vec3 get_barycentric(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 p) {
     Vec3 l0 = v1 - v0;
     Vec3 l1 = v2 - v0;
     Vec3 d = p - v0;
@@ -47,6 +47,20 @@ inline Vec3 get_barycentric(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 p) {
     float w = (d00 * d21 - d01 * d20) / denom;
     float u = 1.0f - v - w;
     return Vec3(u, v, w);
+}*/
+
+OPENGP_DEVICE_FUNC inline Vec3 get_barycentric(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 p) {
+    Vec3 A0 = (v1 - v0).cross(v2 - v0);
+    Vec3 A1 = (v2 - v1).cross(v0 - v1);
+    Vec3 A2 = (v0 - v2).cross(v1 - v2);
+    Vec3 l0 = v0 - p;
+    Vec3 l1 = v1 - p;
+    Vec3 l2 = v2 - p;
+    return Vec3(
+        l1.cross(l2).dot(A0),
+        l2.cross(l0).dot(A1),
+        l0.cross(l1).dot(A2)
+    ) / A0.squaredNorm();
 }
 
 OPENGP_DEVICE_FUNC inline float stop_nan(float t) {
@@ -115,6 +129,13 @@ OPENGP_DEVICE_FUNC inline Vec3 wedge_normal(const Vec4 &s0, const Vec4 &s1, cons
     return result;
 }
 
+OPENGP_DEVICE_FUNC inline Vec3 sphere_project(const Vec3& p, const Vec4& s, float* sdf_out=nullptr) {
+    Vec3 d = p - s.head<3>();
+    float spdist = d.norm();
+    if (sdf_out != nullptr) *sdf_out = spdist - s(3);
+    return s.head<3>() + s(3) * d / spdist;
+}
+
 OPENGP_DEVICE_FUNC inline Vec3 pill_project(const Vec3 &p, const Vec4 &s0, const Vec4 &s1, float *sdf_out=nullptr) {
 
     // Abbreviations
@@ -148,13 +169,8 @@ OPENGP_DEVICE_FUNC inline Vec3 pill_project(const Vec3 &p, const Vec4 &s0, const
 
     // Lerped position + radius
     Vec4 s2 = (1 - t) * s0 + t * s1;
-    Vec3 c2 = s2.head<3>();
 
-    float spdist = (p - c2).norm();
-
-    if (sdf_out != nullptr) *sdf_out = spdist - s2(3);
-
-    return c2 + s2(3) * (p - c2) / spdist;
+    return sphere_project(p, s2, sdf_out);
 
 }
 
@@ -175,43 +191,98 @@ inline Vec4 pill_s2(const Vec3 &p, const Vec4 &s0, const Vec4 &s1) {
 
 OPENGP_DEVICE_FUNC inline Vec3 wedge_project(const Vec3 &p, const Vec4 &s0, const Vec4 &s1, const Vec4 &s2, float *sdf_out=nullptr) {
 
-    Vec3 c1 = s1.head<3>();
-
-    Vec3 c0c1 = s1.head<3>() - s0.head<3>();
-    Vec3 c1c2 = s2.head<3>() - s1.head<3>();
-
     Vec3 n_wedge = wedge_normal_toward(s0, s1, s2, p);
-    Vec3 n_plane = n_wedge.cross(p - s0.head<3>());
 
-    Vec3 c3 = c1 - c1c2 * c0c1.dot(n_plane) / c1c2.dot(n_plane);
+    Vec3 tt0 = s0.head<3>() + n_wedge * s0(3);
+    Vec3 tt1 = s1.head<3>() + n_wedge * s1(3);
+    Vec3 tt2 = s2.head<3>() + n_wedge * s2(3);
+    Vec3 ttp = p - n_wedge * (p - tt0).dot(n_wedge);
 
-    float t = (c3 - c1).dot(c1c2) / c1c2.squaredNorm();
-    t = clamp01(stop_nan(t));
+    Vec3 baryc = get_barycentric(tt0, tt1, tt2, ttp);
+    std::cout << baryc(0) << ", " << baryc(1) << ", " << baryc(2) << std::endl;
 
-    Vec4 s3 = (1 - t) * s1 + t * s2;
+    std::pair<const Vec4*, float> s_pairs[] = {
+        std::pair<const Vec4*, float>(&s0, baryc(0)),
+        std::pair<const Vec4*, float>(&s1, baryc(1)),
+        std::pair<const Vec4*, float>(&s2, baryc(2))
+    };
 
-    return pill_project(p, s0, s3, sdf_out);
+    std::sort(std::begin(s_pairs), std::end(s_pairs), [](std::pair<const Vec4*, float>& p0, std::pair<const Vec4*, float>& p1){
+        return p0.second > p1.second;
+    });
+
+    {
+
+        auto& s0 = *(s_pairs[0].first);
+        auto& s1 = *(s_pairs[1].first);
+        auto& s2 = *(s_pairs[2].first);
+
+        Vec3 c1 = s1.head<3>();
+
+        Vec3 c0c1 = s1.head<3>() - s0.head<3>();
+        Vec3 c1c2 = s2.head<3>() - s1.head<3>();
+
+        Vec3 n_plane = n_wedge.cross(p - s0.head<3>());
+
+        Vec3 c3 = c1 - c1c2 * c0c1.dot(n_plane) / c1c2.dot(n_plane);
+
+        float t = (c3 - c1).dot(c1c2) / c1c2.squaredNorm();
+        t = clamp01(stop_nan(t));
+
+        Vec4 s3 = (1 - t) * s1 + t * s2;
+
+        return pill_project(p, s0, s3, sdf_out);
+
+
+    }
 
 }
 
-inline Vec4 wedge_s3(const Vec3 &p, const Vec4 &s0, const Vec4 &s1, const Vec4 &s2) {
-
-    Vec3 c1 = s1.head<3>();
-
-    Vec3 c0c1 = s1.head<3>() - s0.head<3>();
-    Vec3 c1c2 = s2.head<3>() - s1.head<3>();
+inline std::pair<Vec4, Vec4> wedge_subpill(const Vec3 &p, const Vec4 &s0, const Vec4 &s1, const Vec4 &s2) {
 
     Vec3 n_wedge = wedge_normal_toward(s0, s1, s2, p);
-    Vec3 n_plane = n_wedge.cross(p - s0.head<3>());
 
-    Vec3 c3 = c1 - c1c2 * c0c1.dot(n_plane) / c1c2.dot(n_plane);
+    Vec3 tt0 = s0.head<3>() + n_wedge * s0(3);
+    Vec3 tt1 = s1.head<3>() + n_wedge * s1(3);
+    Vec3 tt2 = s2.head<3>() + n_wedge * s2(3);
+    Vec3 ttp = p - n_wedge * (p - tt0).dot(n_wedge);
 
-    float t = (c3 - c1).dot(c1c2) / c1c2.squaredNorm();
-    t = clamp01(stop_nan(t));
+    Vec3 baryc = get_barycentric(tt0, tt1, tt2, ttp);
 
-    Vec4 s3 = (1 - t) * s1 + t * s2;
+    std::pair<const Vec4*, float> s_pairs[] = {
+        std::pair<const Vec4*, float>(&s0, baryc(0)),
+        std::pair<const Vec4*, float>(&s1, baryc(1)),
+        std::pair<const Vec4*, float>(&s2, baryc(2))
+    };
 
-    return s3;
+    std::sort(std::begin(s_pairs), std::end(s_pairs), [](std::pair<const Vec4*, float>& p0, std::pair<const Vec4*, float>& p1){
+        return p0.second > p1.second;
+    });
+
+    {
+
+        auto& s0 = *(s_pairs[0].first);
+        auto& s1 = *(s_pairs[1].first);
+        auto& s2 = *(s_pairs[2].first);
+
+        Vec3 c1 = s1.head<3>();
+
+        Vec3 c0c1 = s1.head<3>() - s0.head<3>();
+        Vec3 c1c2 = s2.head<3>() - s1.head<3>();
+
+        Vec3 n_plane = n_wedge.cross(p - s0.head<3>());
+
+        Vec3 c3 = c1 - c1c2 * c0c1.dot(n_plane) / c1c2.dot(n_plane);
+
+        float t = (c3 - c1).dot(c1c2) / c1c2.squaredNorm();
+        t = clamp01(stop_nan(t));
+
+        Vec4 s3 = (1 - t) * s1 + t * s2;
+
+        return std::pair<Vec4, Vec4> (s0, s3);
+
+
+    }
 
 }
 

@@ -33,8 +33,8 @@ Vec3 sphere_mesh_project(const Vec3 &p, const SphereMesh &mesh, Vec4& s0_out, Ve
         if (dist < best_dist) {
             best_dist = dist;
             best_proj = proj;
-            s0_out = s0;
-            s1_out = wedge_s3(p, s0, s1, s2);
+
+            std::tie(s0_out, s1_out) = wedge_subpill(p, s0, s1, s2);
             s_out = pill_s2(p, s0_out, s1_out);
         }
     }
