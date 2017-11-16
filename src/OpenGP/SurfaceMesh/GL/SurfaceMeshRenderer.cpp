@@ -44,7 +44,7 @@ const char *SurfaceMeshRenderer::gshader() {
         out vec3 fposition;
         noperspective out vec3 fwireframe;
 
-        void main() {
+        void geometry() {
             for (int i = 0;i < 3;i++) {
                 gl_Position = gl_in[i].gl_Position;
                 fnormal = gnormal[i];

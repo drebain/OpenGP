@@ -60,6 +60,11 @@ public:
             free(uninitialized_data);
         }
 
+        auto vcolor = mesh.get_vertex_property<Vec3>("v:color");
+        if (vcolor) {
+            set_vbo_raw<Vec3>("vcolor", vcolor.data(), mesh.n_vertices());
+        }
+
         // TODO: read texture coordinates
         {
             void *uninitialized_data = malloc(mesh.n_vertices() * sizeof(Vec2));
