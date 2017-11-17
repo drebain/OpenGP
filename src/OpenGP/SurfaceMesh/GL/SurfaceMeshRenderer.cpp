@@ -99,7 +99,10 @@ void SurfaceMeshRenderer::render(const RenderContext &context) {
     if (!depth_test)
         glDisable(GL_DEPTH_TEST);
 
-    gpu_mesh.draw();
+    if (instancing.enabled)
+        gpu_mesh.draw_instanced(instancing.count);
+    else
+        gpu_mesh.draw();
 
     if (!depth_test)
         glEnable(GL_DEPTH_TEST);
