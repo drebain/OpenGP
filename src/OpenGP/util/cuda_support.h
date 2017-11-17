@@ -10,3 +10,30 @@
 #else
     #define OPENGP_DEVICE_FUNC
 #endif
+
+#ifndef __CUDA_ARCH__
+    #include <cmath>
+    #define MATH_STD std
+#else
+    #define MATH_STD
+#endif
+
+
+//=============================================================================
+namespace OpenGP {
+//=============================================================================
+
+namespace cuda_support {
+
+    template <typename T>
+    OPENGP_DEVICE_FUNC bool isfinite(const T& a) {
+        return MATH_STD::isfinite(a);
+    }
+
+}
+
+//=============================================================================
+} // OpenGP::
+//=============================================================================
+
+#undef MATH_STD

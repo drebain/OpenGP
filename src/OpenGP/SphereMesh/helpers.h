@@ -34,11 +34,11 @@ inline Vec2 pill_tangent(const Vec4 &s0_3D, const Vec4 &s1_3D) {
 }
 
 OPENGP_DEVICE_FUNC inline float stop_nan(float t) {
-    return (std::isinf(t) || std::isnan(t)) ? 0 : t;
+    return cuda_support::isfinite(t) ? t : 0;
 }
 
 OPENGP_DEVICE_FUNC inline float clamp01(float t) {
-    return std::fmax(std::fmin(t, 1), 0);
+    return fmax(std::fmin(t, 1), 0);
 }
 
 OPENGP_DEVICE_FUNC inline Vec3 get_barycentric(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 p) {
@@ -61,19 +61,19 @@ OPENGP_DEVICE_FUNC inline Vec3 wedge_normal(const Vec4 &s0, const Vec4 &s1, cons
     Vec3 c0c1 = s1.head<3>() - s0.head<3>();
     Vec3 c0c2 = s2.head<3>() - s0.head<3>();
 
-    float beta = std::asin((s2(3) - s0(3)) / c0c2.norm());
+    float beta = asin((s2(3) - s0(3)) / c0c2.norm());
 
     Vec3 n_tri = c0c1.cross(c0c2).normalized();
     Vec3 a = -c0c2.normalized();
     Vec3 b = a.cross(n_tri);
 
-    float sb = std::sin(beta);
-    float cb = std::cos(beta);
+    float sb = sin(beta);
+    float cb = cos(beta);
 
-    float alpha = std::asin((s0(3) - s1(3) - sb * c0c1.dot(a)) / (cb * c0c1.dot(b)));
+    float alpha = asin((s0(3) - s1(3) - sb * c0c1.dot(a)) / (cb * c0c1.dot(b)));
 
-    float sa = std::sin(alpha);
-    float ca = std::cos(alpha);
+    float sa = sin(alpha);
+    float ca = cos(alpha);
 
     return a * sb + cb * (n_tri * ca + b * sa);
 }
@@ -83,20 +83,20 @@ OPENGP_DEVICE_FUNC inline Vec3 wedge_normal_toward(const Vec4 &s0, const Vec4 &s
     Vec3 c0c1 = s1.head<3>() - s0.head<3>();
     Vec3 c0c2 = s2.head<3>() - s0.head<3>();
 
-    float beta = std::asin((s2(3) - s0(3)) / c0c2.norm());
+    float beta = asin((s2(3) - s0(3)) / c0c2.norm());
 
     Vec3 n_tri = c0c1.cross(c0c2).normalized();
-    n_tri *= std::copysign(1.0f, n_tri.dot(p - s0.head<3>()));
+    n_tri *= copysign(1.0f, n_tri.dot(p - s0.head<3>()));
     Vec3 a = -c0c2.normalized();
     Vec3 b = a.cross(n_tri);
 
-    float sb = std::sin(beta);
-    float cb = std::cos(beta);
+    float sb = sin(beta);
+    float cb = cos(beta);
 
-    float alpha = std::asin((s0(3) - s1(3) - sb * c0c1.dot(a)) / (cb * c0c1.dot(b)));
+    float alpha = asin((s0(3) - s1(3) - sb * c0c1.dot(a)) / (cb * c0c1.dot(b)));
 
-    float sa = std::sin(alpha);
-    float ca = std::cos(alpha);
+    float sa = sin(alpha);
+    float ca = cos(alpha);
 
     return a * sb + cb * (n_tri * ca + b * sa);
 
@@ -142,10 +142,10 @@ OPENGP_DEVICE_FUNC inline Vec3 pill_project(const Vec3 &p, const Vec4 &s0, const
     Vec3 p_proj = d2 - an * d2.dot(an);
 
     // Angle of bitangent
-    float beta = std::asin(a(3) / l);
+    float beta = asin(a(3) / l);
 
     // Offset along axis
-    Vec3 offset = an * p_proj.norm() * std::tan(beta);
+    Vec3 offset = an * p_proj.norm() * tan(beta);
 
     // Position along axis
     float t = an.dot(p + p_proj + offset - c0) / l;
@@ -172,7 +172,7 @@ OPENGP_DEVICE_FUNC inline Vec3 wedge_project(const Vec3 &p, const Vec4 &s0, cons
     Vec3 ttp = p - n_wedge * (p - tt0).dot(n_wedge);
 
     Vec3 baryc = get_barycentric(tt0, tt1, tt2, ttp).cwiseAbs();
-    if (std::fabs(baryc.sum() - 1) > 0.001) {
+    if (fabs(baryc.sum() - 1) > 0.001) {
         baryc = Vec3(1, 0, 0);
     }
 
@@ -180,16 +180,12 @@ OPENGP_DEVICE_FUNC inline Vec3 wedge_project(const Vec3 &p, const Vec4 &s0, cons
 
     float best_sdf;
     Vec3 best_proj = sphere_project(p, s3, &best_sdf);
-    assert(!(std::isinf(best_sdf) || std::isnan(best_sdf)));
 
     float sdf0, sdf1, sdf2;
 
     Vec3 proj0 = pill_project(p, s0, s1, &sdf0);
-    assert(!(std::isinf(sdf0) || std::isnan(sdf0)));
     Vec3 proj1 = pill_project(p, s1, s2, &sdf1);
-    assert(!(std::isinf(sdf1) || std::isnan(sdf1)));
     Vec3 proj2 = pill_project(p, s2, s0, &sdf2);
-    assert(!(std::isinf(sdf2) || std::isnan(sdf2)));
 
     if (sdf0 < best_sdf) { best_sdf = sdf0; best_proj = proj0; }
     if (sdf1 < best_sdf) { best_sdf = sdf1; best_proj = proj1; }
