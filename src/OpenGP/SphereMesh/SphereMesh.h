@@ -270,6 +270,8 @@ public:
         econn  = add_edge_property<EdgeConnectivity>("e:connectivity");
         fconn  = add_face_property<FaceConnectivity>("f:connectivity");
         vpoint = add_vertex_property<Point>("v:point");
+        
+        deleted_vertices = deleted_spheres = deleted_edges = deleted_faces = 0;
     }
 
     virtual ~SphereMesh() {}
