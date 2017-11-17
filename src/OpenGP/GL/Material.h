@@ -19,18 +19,25 @@ namespace OpenGP{
 class Material {
 private:
 
-    std::string shading_code;
+    std::string vertex_code;
+    std::string geometry_code;
+    std::string fragment_code;
 
     std::unordered_map<std::string, std::function<void(Shader &shader)>> properties;
 
-    HEADERONLY_INLINE static const char *default_code();
+    HEADERONLY_INLINE static const char *default_vertex_code();
+    HEADERONLY_INLINE static const char *default_geometry_code();
+    HEADERONLY_INLINE static const char *default_fragment_code();
 
 public:
 
     HEADERONLY_INLINE Material();
-    HEADERONLY_INLINE Material(const std::string &code);
+    HEADERONLY_INLINE Material(const std::string &fragment_code);
+    HEADERONLY_INLINE Material(const std::string &vertex_code, const std::string &geometry_code, const std::string &fragment_code);
 
-    HEADERONLY_INLINE const std::string &get_shading_code() const;
+    HEADERONLY_INLINE const std::string &get_vertex_code() const;
+    HEADERONLY_INLINE const std::string &get_geometry_code() const;
+    HEADERONLY_INLINE const std::string &get_fragment_code() const;
 
     template <typename T>
     void set_property(const std::string &name, const T &val) {

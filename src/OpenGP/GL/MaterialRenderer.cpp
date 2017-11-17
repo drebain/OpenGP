@@ -104,6 +104,7 @@ namespace {
 
             void main() {
                 vertex();
+                vertex_shade();
             }
 
         )GLSL";
@@ -129,12 +130,23 @@ namespace {
         )GLSL";
     }
 
+    inline const char *base_gshader() {
+        return R"GLSL(
+
+            void main() {
+                geometry();
+                geometry_shade();
+            }
+
+        )GLSL";
+    }
+
     inline const char *base_fshader() {
         return R"GLSL(
 
             void main() {
                 fragment();
-                vec4 shade_color = shade();
+                vec4 shade_color = fragment_shade();
                 vec4 wire_color = vec4(get_wirecolor(), 1);
                 float wire_weight = get_wireframe() * get_wire_weight();
                 _out_color = mix(shade_color, wire_color, wire_weight);
@@ -165,19 +177,21 @@ void MaterialRenderer::build_shader(Shader &shader, const std::string &vshader, 
     std::string vshader_source = "#version 330 core\n";
     vshader_source += global_uniforms();
     vshader_source += vshader_preamble();
+    vshader_source += material.get_vertex_code();
     vshader_source += vshader;
     vshader_source += base_vshader();
 
     std::string gshader_source = "#version 330 core\n";
     gshader_source += global_uniforms();
     //gshader_source += vshader_preamble();
+    gshader_source += material.get_geometry_code();
     gshader_source += gshader;
-    //gshader_source += base_vshader();
+    gshader_source += base_gshader();
 
     std::string fshader_source = "#version 330 core\n";
     fshader_source += global_uniforms();
     fshader_source += fshader_preamble();
-    fshader_source += material.get_shading_code();
+    fshader_source += material.get_fragment_code();
     fshader_source += fshader;
     fshader_source += base_fshader();
 
@@ -209,7 +223,7 @@ void MaterialRenderer::update_shader(Shader &shader, const RenderContext &contex
     shader.set_uniform("_uniform_VP", context.VP);
     shader.set_uniform("_uniform_MVP", context.MVP);
 
-    shader.set_uniform("_uniform_wireframe", wireframe_mode != WireframeMode::None);
+    shader.set_uniform("_uniform_wireframe", use_wirecolor && (wireframe_mode != WireframeMode::None));
     shader.set_uniform("_uniform_wirecolor", wirecolor);
 
     material.apply_properties(shader);

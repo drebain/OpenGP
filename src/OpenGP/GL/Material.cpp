@@ -9,12 +9,30 @@
 namespace OpenGP {
 //=============================================================================
 
-const char *Material::default_code() {
+const char *Material::default_vertex_code() {
+    return R"GLSL(
+
+    void vertex_shade() {
+    }
+
+)GLSL";
+}
+
+const char *Material::default_geometry_code() {
+    return R"GLSL(
+
+    void geometry_shade() {
+    }
+
+)GLSL";
+}
+
+const char *Material::default_fragment_code() {
     return R"GLSL(
 
         uniform vec3 base_color;
 
-        vec4 shade() {
+        vec4 fragment_shade() {
             vec3 lightdir = -get_forward();
             float diffuse = clamp(abs(dot(get_normal(), normalize(lightdir))), 0, 1);
             vec3 ambient = vec3(0.1,0.11,0.13);
@@ -25,16 +43,26 @@ const char *Material::default_code() {
     )GLSL";
 }
 
-Material::Material() : Material(default_code()) {
+Material::Material() : Material(default_vertex_code(), default_geometry_code(), default_fragment_code()) {
     set_property("base_color", Vec3(0.6, 0.6, 0.6));
 }
 
-Material::Material(const std::string &code) {
-    shading_code = code;
+Material::Material(const std::string &fragment_code) : Material(default_vertex_code(), default_geometry_code(), fragment_code) {}
+
+Material::Material(const std::string &vertex_code, const std::string &geometry_code, const std::string &fragment_code) {
+    this->vertex_code = vertex_code;
+    this->geometry_code = geometry_code;
+    this->fragment_code = fragment_code;
 }
 
-const std::string &Material::get_shading_code() const {
-    return shading_code;
+const std::string &Material::get_vertex_code() const {
+    return vertex_code;
+}
+const std::string &Material::get_geometry_code() const {
+    return geometry_code;
+}
+const std::string &Material::get_fragment_code() const {
+    return fragment_code;
 }
 
 void Material::apply_properties(Shader &shader) const {

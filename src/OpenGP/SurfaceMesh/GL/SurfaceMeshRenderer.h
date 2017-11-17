@@ -27,6 +27,10 @@ private:
 public:
 
     bool depth_test = true;
+    struct {
+        bool enabled = false;
+        int count = 1;
+    } instancing;
 
     HEADERONLY_INLINE SurfaceMeshRenderer();
 

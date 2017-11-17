@@ -102,6 +102,7 @@ public:
 
     WireframeMode wireframe_mode = WireframeMode::None;
     Vec3 wirecolor = Vec3(0, 0, 0);
+    bool use_wirecolor = true;
 
     MaterialRenderer() {}
 
