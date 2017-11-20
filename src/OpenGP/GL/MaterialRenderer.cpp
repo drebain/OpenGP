@@ -177,22 +177,22 @@ void MaterialRenderer::build_shader(Shader &shader, const std::string &vshader, 
     std::string vshader_source = "#version 330 core\n";
     vshader_source += global_uniforms();
     vshader_source += vshader_preamble();
-    vshader_source += material.get_vertex_code();
     vshader_source += vshader;
+    vshader_source += material.get_vertex_code();
     vshader_source += base_vshader();
 
     std::string gshader_source = "#version 330 core\n";
     gshader_source += global_uniforms();
     //gshader_source += vshader_preamble();
-    gshader_source += material.get_geometry_code();
     gshader_source += gshader;
+    gshader_source += material.get_geometry_code();
     gshader_source += base_gshader();
 
     std::string fshader_source = "#version 330 core\n";
     fshader_source += global_uniforms();
     fshader_source += fshader_preamble();
-    fshader_source += material.get_fragment_code();
     fshader_source += fshader;
+    fshader_source += material.get_fragment_code();
     fshader_source += base_fshader();
 
     shader.add_vshader_from_source(vshader_source.c_str());

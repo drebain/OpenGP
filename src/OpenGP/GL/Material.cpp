@@ -65,6 +65,16 @@ const std::string &Material::get_fragment_code() const {
     return fragment_code;
 }
 
+void Material::set_vertex_code(const std::string& code) {
+    vertex_code = code;
+}
+void Material::set_geometry_code(const std::string& code) {
+    geometry_code = code;
+}
+void Material::set_fragment_code(const std::string& code) {
+    fragment_code = code;
+}
+
 void Material::apply_properties(Shader &shader) const {
     for (auto &pair : properties) {
         pair.second(shader);

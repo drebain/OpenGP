@@ -39,6 +39,10 @@ public:
     HEADERONLY_INLINE const std::string &get_geometry_code() const;
     HEADERONLY_INLINE const std::string &get_fragment_code() const;
 
+    HEADERONLY_INLINE void set_vertex_code(const std::string& code);
+    HEADERONLY_INLINE void set_geometry_code(const std::string& code);
+    HEADERONLY_INLINE void set_fragment_code(const std::string& code);
+
     template <typename T>
     void set_property(const std::string &name, const T &val) {
         properties[name] = [val, name] (Shader &shader) {
