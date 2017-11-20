@@ -38,7 +38,7 @@ OPENGP_DEVICE_FUNC inline float stop_nan(float t) {
 }
 
 OPENGP_DEVICE_FUNC inline float clamp01(float t) {
-    return fmax(std::fmin(t, 1), 0);
+    return fmax(fmin(t, 1), 0);
 }
 
 OPENGP_DEVICE_FUNC inline Vec3 get_barycentric(Vec3 v0, Vec3 v1, Vec3 v2, Vec3 p) {
