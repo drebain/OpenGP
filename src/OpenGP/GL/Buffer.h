@@ -31,6 +31,8 @@ public:
     void bind() { glBindBuffer(TARGET, buffer); }
     void unbind() { glBindBuffer(TARGET, 0); }
 
+    GLuint id() const { return buffer; }
+
     /// @note use the other upload functions whenever possible
     virtual void upload_raw_block(const GLvoid* raw_data_ptr, GLsizeiptr block_size, GLenum usage=GL_STATIC_DRAW){
         glBindBuffer(TARGET, buffer);
