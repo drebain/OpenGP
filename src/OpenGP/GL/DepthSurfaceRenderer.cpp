@@ -12,10 +12,11 @@ namespace OpenGP {
 const char *DepthSurfaceRenderer::vshader() {
   return R"GLSL(
 
-        uniform sampler2D depth_texture;
+        uniform usampler2D depth_texture;
 
         uniform mat4 sensor_matrix_inv;
-		uniform float zfar;
+		uniform float depth_to_z_scale;
+		uniform float depth_far_plane;
 
         in vec3 vposition;
 
@@ -24,10 +25,10 @@ const char *DepthSurfaceRenderer::vshader() {
 
         void vertex() {
             vec2 uv = (vposition.xy + vec2(1, 1)) / 2;
-            float depth = texture(depth_texture, uv).r;
-
+            float depth = float(texture(depth_texture, uv).r);
 			do_discard = 0.0;
-			if (depth == zfar) do_discard = 1.0;
+            depth *= depth_to_z_scale;
+			if (depth >= depth_far_plane) do_discard = 1.0;
 
 			vec3 pos = vec3((sensor_matrix_inv * vec4(vposition, 1)).xy * depth, depth);			
 
@@ -96,8 +97,8 @@ void DepthSurfaceRenderer::rebuild_mesh() {
 		}
 	}
 
-	gpu_mesh.set_vbo<Vec3>("vposition", vposition);
-	gpu_mesh.set_triangles(triangles);
+    gpu_mesh.set_vbo<Vec3>("vposition", vposition);
+    gpu_mesh.set_triangles(triangles);
 }
 
 void DepthSurfaceRenderer::set_depth_texture(const GenericTexture &texture) {
@@ -117,11 +118,18 @@ void DepthSurfaceRenderer::set_sensor_matrix(const Mat4x4 &sensor_matrix) {
 	shader.unbind();
 }
 
-void DepthSurfaceRenderer::set_zfar(float zfar) {
-	this->zfar = zfar;
+void DepthSurfaceRenderer::set_depth_to_z_scale(float scale) {
+	this->depth_to_z_scale = scale;
 	shader.bind();
-	shader.set_uniform("zfar", this->zfar);
+	shader.set_uniform("depth_to_z_scale", scale);
 	shader.unbind();
+}
+
+void DepthSurfaceRenderer::set_z_limit(float limit) {
+    this->z_limit = limit;
+    shader.bind();
+    shader.set_uniform("z_limit", limit);
+    shader.unbind();
 }
 
 void DepthSurfaceRenderer::render(const RenderContext &context) {
@@ -151,7 +159,8 @@ void DepthSurfaceRenderer::rebuild() {
 	gpu_mesh.set_attributes(shader);
 	shader.set_uniform("depth_texture", 0);
 	shader.set_uniform("sensor_matrix_inv", sensor_matrix_inv);
-	shader.set_uniform("zfar", zfar);
+    shader.set_uniform("depth_to_z_scale", depth_to_z_scale);
+    shader.set_uniform("z_limit", z_limit);
 	shader.unbind();
 }
 

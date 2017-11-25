@@ -24,8 +24,8 @@ struct StreamIntrinsics {
 
     template <typename Scalar>
     OPENGP_DEVICE_FUNC Vec3 unproject(int i, int j, Scalar depth) const {
-        Scalar x = (i - pixel_center(0)) / focal_length(0);
-        Scalar y = (j - pixel_center(1)) / focal_length(1);
+        Scalar x = (i - pixel_center(0)) * focal_length(0);
+        Scalar y = (j - pixel_center(1)) * focal_length(1);
         return depth * Vec3(x, y, 1);
     }
 };
