@@ -16,7 +16,7 @@ const char *DepthSurfaceRenderer::vshader() {
 
         uniform mat4 sensor_matrix_inv;
 		uniform float depth_to_z_scale;
-		uniform float depth_far_plane;
+		uniform float z_limit;
 
         in vec3 vposition;
 
@@ -28,7 +28,7 @@ const char *DepthSurfaceRenderer::vshader() {
             float depth = float(texture(depth_texture, uv).r);
 			do_discard = 0.0;
             depth *= depth_to_z_scale;
-			if (depth >= depth_far_plane) do_discard = 1.0;
+			if (depth >= z_limit) do_discard = 1.0;
 
 			vec3 pos = vec3((sensor_matrix_inv * vec4(vposition, 1)).xy * depth, depth);			
 
