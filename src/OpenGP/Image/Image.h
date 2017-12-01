@@ -306,8 +306,10 @@ void imwrite(const char* path, ImageType &I) {
         write_function = [&](int row, int col, int c) {
             if (c < image_type_components)
                 return scalar_transfer_write<Scalar>(ImageTypeInfo<ImageType>::channel_ref(I, row, col, c));
-            else
+            else{
                 mFatal() << "Image type and image file are incompatible";
+                return 0.0;
+            }
         };
     }
 
