@@ -45,6 +45,10 @@ Application::WindowContainer::WindowContainer(Application &app, std::function<vo
         int new_width, new_height;
         std::tie(new_width, new_height) = window.get_size();
 
+        float scale = window.get_pixel_scale();
+        new_width *= scale;
+        new_height *= scale;
+
         auto old_context = glfwGetCurrentContext();
         glfwMakeContextCurrent(app.hidden_window);
 

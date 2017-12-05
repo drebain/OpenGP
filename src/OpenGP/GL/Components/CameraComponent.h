@@ -86,6 +86,11 @@ public:
 
         RenderContext context;
 
+        if (has_window()) {
+          float scale = window->get_pixel_scale();
+          width *= scale;
+          height *= scale;
+        }
         glViewport(0, 0, width, height);
         glClearColor(0.15f, 0.15f, 0.15f, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
