@@ -122,7 +122,12 @@ namespace OpenGP {
             );
         }
         
-        dev->start();
+        try {
+            dev->start();
+        } catch (rs::error e) {
+            puts(e.what());
+            return SensorDevice();
+        }
 
         return SensorDevice(streams, [=](bool block) {
             ctx;

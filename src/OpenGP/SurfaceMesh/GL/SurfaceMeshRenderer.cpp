@@ -51,6 +51,7 @@ const char *SurfaceMeshRenderer::gshader() {
                 fposition = gposition[i];
                 fwireframe = vec3(0, 0, 0);
                 fwireframe[i] = 1;
+                geometry_vertex_shade(i);
                 EmitVertex();
             }
         }

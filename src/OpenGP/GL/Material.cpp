@@ -21,7 +21,7 @@ const char *Material::default_vertex_code() {
 const char *Material::default_geometry_code() {
     return R"GLSL(
 
-    void geometry_shade() {
+    void geometry_vertex_shade(int v) {
     }
 
 )GLSL";

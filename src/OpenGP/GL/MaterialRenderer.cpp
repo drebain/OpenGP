@@ -135,7 +135,6 @@ namespace {
 
             void main() {
                 geometry();
-                geometry_shade();
             }
 
         )GLSL";
@@ -184,8 +183,8 @@ void MaterialRenderer::build_shader(Shader &shader, const std::string &vshader, 
     std::string gshader_source = "#version 330 core\n";
     gshader_source += global_uniforms();
     //gshader_source += vshader_preamble();
-    gshader_source += gshader;
     gshader_source += material.get_geometry_code();
+    gshader_source += gshader;
     gshader_source += base_gshader();
 
     std::string fshader_source = "#version 330 core\n";

@@ -67,6 +67,8 @@ private:
 
 public:
 
+    SensorDevice() : advance_frame_callback([](bool) {return false; }) {};
+
     template <typename Iterable>
     SensorDevice(const Iterable &pairs, std::function<bool(bool)> advance_frame_callback) :
         streams(pairs.begin(), pairs.end()),
