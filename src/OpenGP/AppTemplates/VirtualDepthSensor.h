@@ -145,20 +145,22 @@ public:
 
         StreamIntrinsics color_intrinsics, depth_intrinsics; // TODO
         StreamExtrinsics color_extrinsics, depth_extrinsics; // TODO
+        float depth_scale;
+        float framerate;
 
         std::unordered_map<std::string, SensorStream> streams;
         streams.emplace(
             std::piecewise_construct,
             std::forward_as_tuple("Color"),
-            std::forward_as_tuple("Color", &color_data, color_intrinsics, color_extrinsics)
+            std::forward_as_tuple("Color", &color_data, color_intrinsics, color_extrinsics, framerate)
         );
         streams.emplace(
             std::piecewise_construct,
             std::forward_as_tuple("Depth"),
-            std::forward_as_tuple("Depth", &depth_data, depth_intrinsics, depth_extrinsics)
+            std::forward_as_tuple("Depth", &depth_data, depth_intrinsics, depth_extrinsics, framerate)
         );
 
-        return SensorDevice(streams, [this](bool block){
+        return SensorDevice(depth_scale, streams, [this](bool block){
 
             get_color_texture()->download(color_buffer);
             get_depthmap()->get_depth_texture().download(depth_buffer);

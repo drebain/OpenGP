@@ -24,9 +24,17 @@ struct StreamIntrinsics {
 
     template <typename Scalar>
     OPENGP_DEVICE_FUNC Vec3 unproject(int i, int j, Scalar depth) const {
-        Scalar x = (i - pixel_center(0)) * focal_length(0);
-        Scalar y = (j - pixel_center(1)) * focal_length(1);
+        Scalar x = (i - pixel_center(0)) / focal_length(0);
+        Scalar y = (j - pixel_center(1)) / focal_length(1);
         return depth * Vec3(x, y, 1);
+    }
+
+    OPENGP_DEVICE_FUNC Scalar get_vfov() const {
+        return (atan2f(pixel_center.y() + 0.5f, focal_length.y()) + atan2f(height - (pixel_center.y() + 0.5f), focal_length.y())) * 57.2957795f;
+    }
+    
+    OPENGP_DEVICE_FUNC Scalar get_hfov() const {
+        return (atan2f(pixel_center.x() + 0.5f, focal_length.x()) + atan2f(width - (pixel_center.x() + 0.5f), focal_length.x())) * 57.2957795f;
     }
 };
 
@@ -42,17 +50,19 @@ private:
 
     StreamIntrinsics intrinsics;
     StreamExtrinsics extrinsics;
+    float framerate;
 
     std::string name;
 
 public:
 
-    HEADERONLY_INLINE SensorStream(const char *name, const void *const *data_ptr, const StreamIntrinsics &intrinsics, const StreamExtrinsics &extrinsics);
+    HEADERONLY_INLINE SensorStream(const char *name, const void *const *data_ptr, const StreamIntrinsics &intrinsics, const StreamExtrinsics &extrinsics, float framerate);
 
     HEADERONLY_INLINE const void *get_data() const;
 
     const StreamIntrinsics &get_intrinsics() const { return intrinsics; }
     const StreamExtrinsics &get_extrinsics() const { return extrinsics; }
+    float get_framerate() const { return framerate; }
 
     const char *get_name() const { return name.c_str(); }
 
@@ -61,25 +71,29 @@ public:
 class SensorDevice {
 private:
 
+    float depth_scale = 1;
+
     std::unordered_map<std::string, SensorStream> streams;
 
     std::function<bool(bool)> advance_frame_callback;
 
 public:
 
-    SensorDevice() : advance_frame_callback([](bool) {return false; }) {};
-
     template <typename Iterable>
-    SensorDevice(const Iterable &pairs, std::function<bool(bool)> advance_frame_callback) :
+    SensorDevice(float depth_scale, const Iterable &pairs, std::function<bool(bool)> advance_frame_callback) :
         streams(pairs.begin(), pairs.end()),
-        advance_frame_callback(advance_frame_callback) {}
+        advance_frame_callback(advance_frame_callback),
+        depth_scale (depth_scale) {}
 
     HEADERONLY_INLINE void advance_frame();
     HEADERONLY_INLINE bool try_advance_frame();
 
+    HEADERONLY_INLINE float get_depth_scale() { return depth_scale; }
+
     HEADERONLY_INLINE const SensorStream &get_stream(const char *name) const;
 
     HEADERONLY_INLINE GenericIterable<const SensorStream> get_streams() const;
+    HEADERONLY_INLINE size_t get_streams_size() const;
 
 };
 

@@ -103,9 +103,14 @@ namespace OpenGP {
         for (auto & stream : supported_streams) {
             if (!dev->is_stream_enabled(stream)) continue;
             auto intrin = dev->get_stream_intrinsics(stream);
+            float framerate = dev->get_stream_framerate(stream);
+
+            float d = dev->get_depth_scale();
 
             StreamIntrinsics intrinsics;
             StreamExtrinsics extrinsics{}; // TODO
+
+            auto vfov = intrin.hfov();
 
             intrinsics.focal_length = { intrin.fx, intrin.fy };
             intrinsics.pixel_center = { intrin.ppx, intrin.ppy };
@@ -118,7 +123,7 @@ namespace OpenGP {
             streams.emplace(
                 std::piecewise_construct,
                 std::forward_as_tuple(name),
-                std::forward_as_tuple(name.c_str(), const_cast<const void**>(&stream_data_ptrs->at(name)), intrinsics, extrinsics)
+                std::forward_as_tuple(name.c_str(), const_cast<const void**>(&stream_data_ptrs->at(name)), intrinsics, extrinsics, framerate)
             );
         }
         
@@ -126,10 +131,10 @@ namespace OpenGP {
             dev->start();
         } catch (rs::error e) {
             puts(e.what());
-            return SensorDevice();
+            throw e;
         }
-
-        return SensorDevice(streams, [=](bool block) {
+        
+        return SensorDevice(dev->get_depth_scale(), streams, [=](bool block) {
             ctx;
             if (block) {
                 dev->wait_for_frames();

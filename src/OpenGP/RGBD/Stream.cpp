@@ -9,11 +9,12 @@
 namespace OpenGP {
 //=============================================================================
 
-SensorStream::SensorStream(const char *name, const void *const *data_ptr, const StreamIntrinsics &intrinsics, const StreamExtrinsics &extrinsics) :
+SensorStream::SensorStream(const char *name, const void *const *data_ptr, const StreamIntrinsics &intrinsics, const StreamExtrinsics &extrinsics, float framerate) :
     data_ptr(data_ptr),
     intrinsics(intrinsics),
     extrinsics(extrinsics),
-    name(name) {}
+    name(name),
+    framerate(framerate) {}
 
 const void *SensorStream::get_data() const {
     return *data_ptr;
@@ -42,6 +43,11 @@ GenericIterable<const SensorStream> SensorDevice::get_streams() const {
 
     return GenericIterable<const ptype>::adaptor(streams).map(pred);
 }
+
+size_t SensorDevice::get_streams_size() const {
+    return streams.size();
+}
+
 
 
 //=============================================================================
