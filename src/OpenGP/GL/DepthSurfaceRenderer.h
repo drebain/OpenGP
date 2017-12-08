@@ -23,6 +23,7 @@ private:
     Mat4x4 sensor_matrix_inv;
 	float depth_to_z_scale;
     float z_limit;
+    float xy_scale;
 
     GLuint width = 0, height = 0;
 
@@ -41,6 +42,7 @@ public:
 	HEADERONLY_INLINE void set_sensor_matrix(const Mat4x4 &sensor_matrix);
     HEADERONLY_INLINE void set_depth_to_z_scale(float scale);
     HEADERONLY_INLINE void set_z_limit(float limit);
+    HEADERONLY_INLINE void set_xy_scale(float scale);
 
     HEADERONLY_INLINE void render(const RenderContext&);
 
