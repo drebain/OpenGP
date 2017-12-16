@@ -151,13 +151,13 @@ public:
         std::unordered_map<std::string, SensorStream> streams;
         streams.emplace(
             std::piecewise_construct,
-            std::forward_as_tuple("Color"),
-            std::forward_as_tuple("Color", &color_data, color_intrinsics, color_extrinsics, framerate)
+            std::forward_as_tuple("COLOR"),
+            std::forward_as_tuple("COLOR", &color_data, color_intrinsics, color_extrinsics, framerate)
         );
         streams.emplace(
             std::piecewise_construct,
-            std::forward_as_tuple("Depth"),
-            std::forward_as_tuple("Depth", &depth_data, depth_intrinsics, depth_extrinsics, framerate)
+            std::forward_as_tuple("DEPTH"),
+            std::forward_as_tuple("DEPTH", &depth_data, depth_intrinsics, depth_extrinsics, framerate)
         );
 
         return SensorDevice(depth_scale, streams, [this](bool block){
