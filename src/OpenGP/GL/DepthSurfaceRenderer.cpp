@@ -17,7 +17,7 @@ const char *DepthSurfaceRenderer::vshader() {
         uniform mat4 sensor_matrix_inv;
 		uniform float depth_to_z_scale;
 		uniform float z_limit;
-        uniform float xy_scale;
+        uniform float scale;
 
         in vec3 vposition;
 
@@ -31,7 +31,7 @@ const char *DepthSurfaceRenderer::vshader() {
             depth *= depth_to_z_scale;
 			if (depth >= z_limit) do_discard = 1.0;
 
-			vec3 pos = vec3((sensor_matrix_inv * vec4(vposition, 1)).xy * depth * xy_scale, depth);			
+			vec3 pos = vec3((sensor_matrix_inv * vec4(vposition, 1)).xy * depth * scale, depth * scale);			
 
 			//if (depth == zfar) gl_Position.z = -zfar;
             //gl_Position = get_P() * gl_Position;
@@ -133,10 +133,10 @@ void DepthSurfaceRenderer::set_z_limit(float limit) {
     shader.unbind();
 }
 
-void DepthSurfaceRenderer::set_xy_scale(float scale) {
-    this->xy_scale = scale;
+void DepthSurfaceRenderer::set_scale(float scale) {
+    this->scale = scale;
     shader.bind();
-    shader.set_uniform("xy_scale", scale);
+    shader.set_uniform("scale", scale);
     shader.unbind();
 }
 
@@ -169,7 +169,7 @@ void DepthSurfaceRenderer::rebuild() {
 	shader.set_uniform("sensor_matrix_inv", sensor_matrix_inv);
     shader.set_uniform("depth_to_z_scale", depth_to_z_scale);
     shader.set_uniform("z_limit", z_limit);
-    shader.set_uniform("xy_scale", xy_scale);
+	shader.set_uniform("scale", scale);
 	shader.unbind();
 }
 
