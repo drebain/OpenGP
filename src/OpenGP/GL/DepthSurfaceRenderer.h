@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <OpenGP/GL/Texture.h>
 #include <OpenGP/GL/MaterialRenderer.h>
 #include <OpenGP/GL/GPUMesh.h>
 

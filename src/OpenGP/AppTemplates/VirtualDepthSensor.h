@@ -20,7 +20,9 @@
 namespace OpenGP {
 //=============================================================================
 
-class DepthSensorComponent : public Component {
+struct NewFrameEvent {};
+
+class DepthSensorComponent : public Component, public EventProvider {
 private:
 
     std::unique_ptr<SyntheticDepthmap> depthmap;
@@ -99,6 +101,9 @@ public:
         transform.set_scale(0.2 * Vec3(y * aspect * 1.01, y * 1.01, 1));
 
         depthmap->clear();
+        depthmap->clear_normals();
+
+        glEnable(GL_DEPTH_TEST);
 
         Mat4x4 view = camera.get_view();
         Mat4x4 projection = camera.get_projection(width, height);
@@ -110,6 +115,7 @@ public:
             Mat4x4 model = drc.get<TransformComponent>().get_transformation_matrix();
 
             depthmap->render(renderer, model, view, projection);
+            depthmap->render_normals(renderer, model, view, projection);
 
         }
 
@@ -118,6 +124,9 @@ public:
         get<CameraComponent>().draw(width, height);
 
         color->unbind();
+
+        NewFrameEvent event;
+        send_event(event);
 
     }
 
@@ -143,10 +152,24 @@ public:
 
     SensorDevice get_device() {
 
-        StreamIntrinsics color_intrinsics, depth_intrinsics; // TODO
-        StreamExtrinsics color_extrinsics, depth_extrinsics; // TODO
-        float depth_scale;
-        float framerate;
+        StreamIntrinsics color_intrinsics, depth_intrinsics;
+        color_intrinsics.width = width;
+        depth_intrinsics.width = width;
+        color_intrinsics.height = height;
+        depth_intrinsics.height = height;
+        color_intrinsics.pixel_center = Vec2(width, height) / 2;
+        depth_intrinsics.pixel_center = Vec2(width, height) / 2;
+        color_intrinsics.focal_length = Vec2(1, 1) * height / (2 * std::tan(get<CameraComponent>().vfov / 2));
+        depth_intrinsics.focal_length = Vec2(1, 1) * height / (2 * std::tan(get<CameraComponent>().vfov / 2));
+
+        StreamExtrinsics color_extrinsics, depth_extrinsics;
+        color_extrinsics.translation = get<TransformComponent>().position;
+        depth_extrinsics.translation = get<TransformComponent>().position;
+        color_extrinsics.rotation = get<TransformComponent>().rotation.matrix();
+        depth_extrinsics.rotation = get<TransformComponent>().rotation.matrix();
+
+        float depth_scale = 1;
+        float framerate = -1;
 
         std::unordered_map<std::string, SensorStream> streams;
         streams.emplace(

@@ -44,7 +44,37 @@ private:
         }
     )GLSL";
 
-    Shader shader;
+    const char* normals_vshader = R"GLSL(
+        #version 330 core
+
+        uniform mat4 M;
+        uniform mat4 V;
+        uniform mat4 P;
+
+        in vec3 vposition;
+        in vec3 vnormal;
+        out vec3 fnormal;
+
+        void main(){
+            vec4 pos = V * M * vec4(vposition, 1);
+            fnormal = vnormal.xyz;//(transpose(inverse((V * M))) * vec4(vnormal.xyz, 1)).xyz;
+
+            gl_Position = P * pos;
+        }
+    )GLSL";
+
+    const char* normals_fshader = R"GLSL(
+        #version 330 core
+
+        in vec3 fnormal;
+        out vec4 fcolor;
+
+        void main(){
+            fcolor = vec4(fnormal, 1);
+        }
+    )GLSL";
+
+    Shader shader, normals_shader;
 
     GPUMesh gpu_mesh;
 
@@ -54,6 +84,9 @@ public:
         shader.add_vshader_from_source(vshader);
         shader.add_fshader_from_source(fshader);
         shader.link();
+        normals_shader.add_vshader_from_source(normals_vshader);
+        normals_shader.add_fshader_from_source(normals_fshader);
+        normals_shader.link();
     }
 
     SurfaceMeshDepthmapRenderer(const SurfaceMesh &mesh) : SurfaceMeshDepthmapRenderer() {
@@ -77,8 +110,22 @@ public:
 
     }
 
+    void draw_normals() {
+
+        glEnable(GL_DEPTH_TEST);
+
+        gpu_mesh.set_attributes(normals_shader);
+
+        gpu_mesh.draw();
+
+    }
+
     Shader &get_shader() {
         return shader;
+    }
+
+    Shader &get_normals_shader() {
+        return normals_shader;
     }
 
 };

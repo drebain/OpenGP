@@ -25,7 +25,11 @@ public:
 
     virtual void draw() = 0;
 
+    virtual void draw_normals() { throw std::runtime_error("not implemented"); }
+
     virtual Shader &get_shader() = 0;
+
+    virtual Shader &get_normals_shader() { throw std::runtime_error("not implemented"); }
 
 };
 
@@ -33,9 +37,11 @@ class SyntheticDepthmap {
 private:
 
     RGB32FTexture points;
-    D16Texture depth;
+    RGB32FTexture normals;
+    D16Texture depth, normals_depth;
 
     Framebuffer framebuffer;
+    Framebuffer normals_framebuffer;
 
     float *data;
 
@@ -46,10 +52,15 @@ public:
     SyntheticDepthmap(GLsizei width, GLsizei height) : width(width), height(height) {
 
         points.allocate(width, height);
+        normals.allocate(width, height);
         depth.allocate(width, height);
+        normals_depth.allocate(width, height);
 
         framebuffer.attach_color_texture(points);
         framebuffer.attach_depth_texture(depth);
+
+        normals_framebuffer.attach_color_texture(normals);
+        normals_framebuffer.attach_depth_texture(normals_depth);
 
     }
 
@@ -61,6 +72,17 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         framebuffer.unbind();
+
+    }
+
+    void clear_normals() {
+
+        normals_framebuffer.bind();
+
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        normals_framebuffer.unbind();
 
     }
 
@@ -82,6 +104,24 @@ public:
 
     }
 
+    void render_normals(DepthmapRenderer &renderer, const Eigen::Matrix4f &M, const Eigen::Matrix4f &V, const Eigen::Matrix4f &P) {
+
+        glViewport(0, 0, width, height);
+
+        normals_framebuffer.bind();
+        renderer.get_normals_shader().bind();
+
+        renderer.get_normals_shader().set_uniform("M", M);
+        renderer.get_normals_shader().set_uniform("V", V);
+        renderer.get_normals_shader().set_uniform("P", P);
+
+        renderer.draw_normals();
+
+        renderer.get_normals_shader().unbind();
+        normals_framebuffer.unbind();
+
+    }
+
     void download() {
 
         glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB32F, GL_FLOAT, data);
@@ -94,10 +134,16 @@ public:
 
     }
 
+    RGB32FTexture &get_normals_texture() {
+
+        return normals;
+
+    }
+
     D16Texture &get_depth_texture() {
 
         return depth;
-        
+
     }
 
     const float *cpu_data() const { return data; }

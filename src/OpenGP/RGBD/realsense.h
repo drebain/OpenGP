@@ -19,7 +19,7 @@ namespace OpenGP {
 //=============================================================================
 
 #ifdef OPENGP_REALSENSE1
-    
+
 inline SensorDevice get_realsense_device() {
 
     std::shared_ptr<rs::context> ctx(new rs::context());
@@ -132,7 +132,7 @@ inline SensorDevice get_realsense_device() {
 
     }
 
-    return SensorDevice(streams, [=](bool block) {
+    return SensorDevice(1, streams, [=](bool block) {
 
         rs2::frameset data;
 
