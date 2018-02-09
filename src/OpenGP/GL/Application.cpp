@@ -206,6 +206,15 @@ void Application::close() {
     close_requested = true;
 }
 
+template <class PixelType>
+void Application::get_color_images_in_windows(std::list<OpenGP::Image<PixelType>>& col_images) {
+	for (std::list<WindowContainer>::iterator it = windows.begin(); it != windows.end(); ++it) {
+		OpenGP::Image<PixelType> img;
+		it->color_texture.download(img);
+		col_images.push_back(img);
+	}
+}
+
 //=============================================================================
 } // OpenGP::
 //=============================================================================

@@ -68,6 +68,10 @@ public:
     /// Set the application's close flag
     HEADERONLY_INLINE void close();
 
+	/// @brief Get the color texture image from the windows
+	template <class PixelType>
+	HEADERONLY_INLINE void get_color_images_in_windows(std::list<OpenGP::Image<PixelType>>& col_images);
+
 };
 
 //=============================================================================
