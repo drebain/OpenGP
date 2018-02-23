@@ -198,7 +198,7 @@ void imread(const char* path, ImageType& I) {
 
         if (image_type_components == 1) {
             // use average of rgb values
-            I.setZero();
+            ImageTypeInfo<ImageType>::set_zero(I);
             read_function = [&](int row, int col, int c, double val) {
                 ImageTypeInfo<ImageType>::channel_ref(I, row, col, 0) += scalar_transfer_read<Scalar>(val / 3);
             };
@@ -221,7 +221,7 @@ void imread(const char* path, ImageType& I) {
 
         if (image_type_components == 1) {
             // use average of rgb values
-            I.setZero();
+            ImageTypeInfo<ImageType>::set_zero(I);
             read_function = [&](int row, int col, int c, double val) {
                 if (c != 3)
                     ImageTypeInfo<ImageType>::channel_ref(I, row, col, 0) += scalar_transfer_read<Scalar>(val / 3);

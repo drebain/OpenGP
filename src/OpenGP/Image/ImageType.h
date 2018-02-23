@@ -27,6 +27,10 @@ struct ImageTypeInfo {
 
     using Scalar = typename ImageType::Scalar::Scalar;
 
+    static void set_zero(ImageType &I) {
+        I = ImageType::Constant(I.rows(), I.cols(), ImageType::Scalar::Zero());
+    }
+
     static Scalar &channel_ref(ImageType &I, int row, int col, int c) {
         assert(c < component_count && c >= 0);
         return I(row, col)(c);
@@ -45,6 +49,10 @@ struct ImageTypeInfo<ImageType, typename std::enable_if<!std::is_base_of<Eigen::
     static constexpr int component_count = 1;
 
     using Scalar = typename ImageType::Scalar;
+
+    static void set_zero(ImageType &I) {
+        I.setZero();
+    }
 
     static Scalar &channel_ref(ImageType &I, int row, int col, int c) {
         assert(c == 0);
