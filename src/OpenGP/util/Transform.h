@@ -80,8 +80,8 @@ public:
     }
 
     void apply_transformation(const Transform &t) {
-        auto t = t.get_transformation_matrix() * get_transformation_matrix();
-        set_transformation_matrix(t);
+        Mat4x4 t_new = t.get_transformation_matrix() * get_transformation_matrix();
+        set_transformation_matrix(t_new);
     }
 
     Mat4x4 get_translation_matrix() const {
