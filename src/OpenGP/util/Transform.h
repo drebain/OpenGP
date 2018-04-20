@@ -74,6 +74,16 @@ public:
         scale = t.scale;
     }
 
+    void apply_transformation_matrix(const Mat4x4 &mat) {
+        auto t = mat * get_transformation_matrix();
+        set_transformation_matrix(t);
+    }
+
+    void apply_transformation(const Transform &t) {
+        auto t = t.get_transformation_matrix() * get_transformation_matrix();
+        set_transformation_matrix(t);
+    }
+
     Mat4x4 get_translation_matrix() const {
 
         Mat4x4 t = Mat4x4::Identity();
