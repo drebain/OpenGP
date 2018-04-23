@@ -270,8 +270,51 @@ public:
         econn  = add_edge_property<EdgeConnectivity>("e:connectivity");
         fconn  = add_face_property<FaceConnectivity>("f:connectivity");
         vpoint = add_vertex_property<Point>("v:point");
+
+        sdeleted = add_sphere_property<bool>("s:deleted");
+        edeleted = add_edge_property<bool>("e:deleted");
+        fdeleted = add_face_property<bool>("f:deleted");
+        vdeleted = add_vertex_property<bool>("v:deleted");
         
         deleted_vertices = deleted_spheres = deleted_edges = deleted_faces = 0;
+    }
+
+    /// Copy constructor
+    SphereMesh(const SphereMesh& other)
+      : vprops(other.vprops),
+        sprops(other.sprops),
+        eprops(other.eprops),
+        fprops(other.fprops) {
+
+        sconn = get_sphere_property<SphereConnectivity>("s:connectivity");
+        econn = get_edge_property<EdgeConnectivity>("e:connectivity");
+        fconn = get_face_property<FaceConnectivity>("f:connectivity");
+        vpoint = get_vertex_property<Point>("v:point");
+
+        sdeleted = get_sphere_property<bool>("s:deleted");
+        edeleted = get_edge_property<bool>("e:deleted");
+        fdeleted = get_face_property<bool>("f:deleted");
+        vdeleted = get_vertex_property<bool>("v:deleted");
+    }
+
+    /// Copy assignment
+    SphereMesh& operator=(const SphereMesh& other) {
+        vprops = other.vprops;
+        sprops = other.sprops;
+        eprops = other.eprops;
+        fprops = other.fprops;
+
+        sconn = get_sphere_property<SphereConnectivity>("s:connectivity");
+        econn = get_edge_property<EdgeConnectivity>("e:connectivity");
+        fconn = get_face_property<FaceConnectivity>("f:connectivity");
+        vpoint = get_vertex_property<Point>("v:point");
+
+        sdeleted = get_sphere_property<bool>("s:deleted");
+        edeleted = get_edge_property<bool>("e:deleted");
+        fdeleted = get_face_property<bool>("f:deleted");
+        vdeleted = get_vertex_property<bool>("v:deleted");
+
+        return *this;
     }
 
     virtual ~SphereMesh() {}
