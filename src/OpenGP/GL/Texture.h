@@ -206,6 +206,7 @@ using RGB8Texture = Texture<GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE>;
 using RGB32FTexture = Texture<GL_RGB32F, GL_RGB, GL_FLOAT>;
 using R32FTexture = Texture<GL_R32F, GL_RED, GL_FLOAT>;
 using D16Texture = Texture<GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT>;
+using D32FTexture = Texture<GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT>;
 
 //=============================================================================
 } // namespace OpenGP

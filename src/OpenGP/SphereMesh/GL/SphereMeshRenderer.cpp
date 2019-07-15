@@ -141,7 +141,7 @@ const char *SphereMeshRenderer::triangle_fshader() {
 
 SphereMeshRenderer::SphereMeshRenderer() {
 
-    int segments = 64;
+    int segments = 16;
 
     { // Sphere generation
         std::vector<Vec3> vpoint;
@@ -214,12 +214,14 @@ void SphereMeshRenderer::render(const RenderContext &context) {
 
     sphere_shader.bind();
 
-    sphere.set_attributes(sphere_shader);
-    update_shader(sphere_shader, context);
+    if (!no_spheres) {
+        sphere.set_attributes(sphere_shader);
+        update_shader(sphere_shader, context);
 
-    sphere.draw_instanced(sphere_count);
+        sphere.draw_instanced(sphere_count);
 
-    sphere_shader.unbind();
+        sphere_shader.unbind();
+    }
 
     cone_shader.bind();
 

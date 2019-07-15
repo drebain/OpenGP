@@ -66,11 +66,11 @@ public:
         }
 
         // TODO: read texture coordinates
-        {
-            void *uninitialized_data = malloc(mesh.n_vertices() * sizeof(Vec2));
-            set_vbo_raw<Vec2>("vtexcoord", uninitialized_data, mesh.n_vertices());
-            free(uninitialized_data);
-        }
+        // {
+        //     void *uninitialized_data = malloc(mesh.n_vertices() * sizeof(Vec2));
+        //     set_vbo_raw<Vec2>("vtexcoord", uninitialized_data, mesh.n_vertices());
+        //     free(uninitialized_data);
+        // }
 
         element_count = 0;
         std::vector<unsigned int> triangles;

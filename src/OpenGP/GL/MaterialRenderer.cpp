@@ -123,6 +123,10 @@ namespace {
             void set_normal(vec3 normal) { _fragment_normal = normal; }
             vec3 get_normal() { return _fragment_normal; }
 
+            vec2 _fragment_texcoord = vec2(0, 0);
+            void set_texcoord(vec2 texcoord) { _fragment_texcoord = texcoord; }
+            vec2 get_texcoord() { return _fragment_texcoord; }
+
             float _fragment_wire_weight = 0;
             void set_wire_weight(float wire_weight) { _fragment_wire_weight = wire_weight; }
             float get_wire_weight() { return _fragment_wire_weight; }

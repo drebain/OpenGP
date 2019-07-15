@@ -17,11 +17,18 @@ class TrackballComponent : public Component {
 private:
 
     bool mouse_control_active = false;
+    bool updated_once = false;
 
-    float hangle, vangle;
+    float hangle = 0, vangle = 0;
     Quaternion base_rotation;
 
 public:
+
+    // Up axis to orient camera
+    Vec3 up_direction = Vec3(0, 1, 0);
+
+    // Should the camera be oriented w.r.t the up direction?
+    bool oriented = false;
 
     /// The point about which the camera will rotate
     Vec3 center;
@@ -39,6 +46,8 @@ public:
         require<CameraComponent>();
 
         center = get<TransformComponent>().position + get<TransformComponent>().forward();
+
+        base_rotation = Quaternion::Identity();
     }
 
     void update() {
@@ -47,12 +56,22 @@ public:
 
         float radius = (center - transform.position).norm();
 
+        if (oriented) {
+            // Transform t_base;
+            // t_base.set_up(up_direction);
+            // base_rotation = t_base.rotation;
+        }
+
+        bool something_happened = false;
+
         auto &camera = get<CameraComponent>();
         if (camera.has_window()) {
 
             auto &input = camera.get_window().get_input();
 
             if (mouse_control_active) {
+
+                something_happened = true;
 
                 if (input.get_mouse(2)) {
 
@@ -81,9 +100,13 @@ public:
                 if (input.get_mouse(2)) {
                     mouse_control_active = true;
 
-                    base_rotation = transform.rotation;
-                    hangle = 0;
-                    vangle = 0;
+                    if (!oriented) {
+                        base_rotation = transform.rotation;
+                        hangle = 0;
+                        vangle = 0;
+                    }
+
+                    something_happened = true;
 
                 }
 
@@ -91,11 +114,17 @@ public:
 
             if (!input.mouse_captured) {
                 radius *= 1 + input.mouse_scroll_delta(1) * scroll_sensitivity;
+
+                if (std::fabs(input.mouse_scroll_delta(1)) > 1e-2)
+                    something_happened = true;
             }
 
         }
 
-        transform.position = center - radius * transform.forward();
+        if (something_happened || !updated_once) {
+            transform.position = center - radius * transform.forward();
+            updated_once = true;
+        }
 
     }
 

@@ -31,20 +31,28 @@ const char *Material::default_fragment_code() {
     return R"GLSL(
 
         uniform vec3 base_color;
+        uniform sampler2D diffuse;
+        uniform int use_diffuse;
 
         vec4 fragment_shade() {
-            vec3 lightdir = -get_forward();
-            float diffuse = clamp(abs(dot(get_normal(), normalize(lightdir))), 0, 1);
+            // vec3 lightdir = -get_forward();
+            vec3 lightdir = normalize(vec3(-1, -2, 1));
+            vec3 diffuse_color = vec3(1, 1, 1);
+            if (bool(use_diffuse)) {
+                diffuse_color = texture(diffuse, get_texcoord()).rgb;
+            }
+            float light = clamp(abs(dot(get_normal(), normalize(lightdir))), 0, 1);
             vec3 ambient = vec3(0.1,0.11,0.13);
 
-            return vec4(diffuse * base_color + ambient, 1);
+            return vec4(light * diffuse_color * base_color + ambient, 1);
         }
 
     )GLSL";
 }
 
 Material::Material() : Material(default_vertex_code(), default_geometry_code(), default_fragment_code()) {
-    set_property("base_color", Vec3(0.6, 0.6, 0.6));
+    set_property("base_color", Vec3(1.0, 1.0, 1.0));
+    set_property("use_diffuse", false);
 }
 
 Material::Material(const std::string &fragment_code) : Material(default_vertex_code(), default_geometry_code(), fragment_code) {}

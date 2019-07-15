@@ -39,6 +39,8 @@ private:
 
 public:
 
+    bool no_spheres = false;
+
     HEADERONLY_INLINE SphereMeshRenderer();
 
     virtual ~SphereMeshRenderer() {}

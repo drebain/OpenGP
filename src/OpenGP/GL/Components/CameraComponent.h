@@ -68,7 +68,7 @@ public:
     }
 
     /// Draw the scene from the camera POV assuming there is a window attached and bound
-    void draw() {
+    void draw(bool gui = true) {
 
         if (window == nullptr) {
             mFatal() << "Camera window not set";
@@ -77,12 +77,12 @@ public:
         int width, height;
         std::tie(width, height) = window->get_size();
 
-        draw(width, height);
+        draw(width, height, 0, 0, gui);
 
     }
 
     /// Draw the scene from the camera POV into the bound framebuffer with given dimensions
-    void draw(int width, int height) {
+    void draw(int width, int height, int x = 0, int y = 0, bool gui = true) {
 
         RenderContext context;
 
@@ -91,8 +91,8 @@ public:
           width *= scale;
           height *= scale;
         }
-        glViewport(0, 0, width, height);
-        glClearColor(0.15f, 0.15f, 0.15f, 1);
+        glViewport(x, y, width, height);
+        glClearColor(29.0/255.0, 29.0/255.0, 37.0/255.0, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
 
@@ -122,6 +122,13 @@ public:
 
             renderable.get_renderer().render(context);
         }
+
+        if (gui)
+            draw_gui();
+
+    }
+
+    void draw_gui() {
 
         GUIRenderEvent event;
 

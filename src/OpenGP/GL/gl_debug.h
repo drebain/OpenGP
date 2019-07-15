@@ -71,20 +71,20 @@ namespace GLDebug {
         }
 
     #ifndef _WIN32
-        std::cout << color;
+        std::clog << color;
     #endif
-        std::cout << std::endl;
+        std::clog << std::endl;
 
-        std::cout << "-- OpenGL Debug Message --" << std::endl;
-        std::cout << "Severity: " << gl_debug_severity_str(severity) << std::endl;
-        std::cout << "Source:   " << gl_debug_source_str(source) << std::endl;
-        std::cout << "Type:     " << gl_debug_type_str(type) << std::endl;
-        std::cout << "Message:" << std::endl << " > " << msg << std::endl;
+        std::clog << "-- OpenGL Debug Message --" << std::endl;
+        std::clog << "Severity: " << gl_debug_severity_str(severity) << std::endl;
+        std::clog << "Source:   " << gl_debug_source_str(source) << std::endl;
+        std::clog << "Type:     " << gl_debug_type_str(type) << std::endl;
+        std::clog << "Message:" << std::endl << " > " << msg << std::endl;
 
     #ifndef _WIN32
-        std::cout << "\033[0m";
+        std::clog << "\033[0m";
     #endif
-        std::cout << std::endl;
+        std::clog << std::endl;
 
     }
 

@@ -142,10 +142,10 @@ public:
     public:
 
         /// Flag indicating whether a specific element is handling mouse input
-        bool mouse_captured;
+        bool mouse_captured = false;
 
         /// Flag indicating whether a specific element is handling keyboard input
-        bool keyboard_captured;
+        bool keyboard_captured = false;
 
         /// The current position of the mouse in the window
         Vec2 mouse_position;

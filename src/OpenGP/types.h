@@ -35,6 +35,10 @@ typedef Vec3 Normal;                                   ///< Normal type
 typedef Vec3 Color;                                    ///< Color type
 typedef Vec3 TextureCoordinate;                        ///< Texture coordinate type
 
+typedef Eigen::Matrix<int, 2, 1> Vec2i;
+typedef Eigen::Matrix<int, 3, 1> Vec3i;
+typedef Eigen::Matrix<int, 4, 1> Vec4i;
+
 ///--- Matrices
 typedef Eigen::Matrix<Scalar, 4, 4> Mat4x4; ///< 4x4 matrix
 typedef Eigen::Matrix<Scalar, 3, 3> Mat3x3; ///< 3x3 matrix

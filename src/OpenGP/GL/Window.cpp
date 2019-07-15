@@ -105,7 +105,7 @@ float Window::get_pixel_scale() {
     glfwGetFramebufferSize(handle, &w_framebuffer, &h_framebuffer);
     int w_scale = w_framebuffer / w_window;
     int h_scale = h_framebuffer / h_window;
-    assert(w_scale == h_scale);
+    // assert(w_scale == h_scale);
     return (float) w_scale;
 }
 

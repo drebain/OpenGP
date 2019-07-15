@@ -120,7 +120,22 @@ void OpenGP::Shader::set_attribute(const char* name, VectorArrayBuffer &buffer, 
     GLint location = attributes.at(std::string(name));
     glEnableVertexAttribArray(location); ///< cached in VAO
     buffer.bind(); ///< memory the description below refers to
-    glVertexAttribPointer(location, buffer.get_components(), buffer.get_data_type(), DONT_NORMALIZE, ZERO_STRIDE, ZERO_BUFFER_OFFSET);
+    switch (buffer.get_data_type()) {
+        case GL_BYTE:
+        case GL_UNSIGNED_BYTE:
+        case GL_SHORT:
+        case GL_UNSIGNED_SHORT:
+        case GL_INT:
+        case GL_UNSIGNED_INT:
+            glVertexAttribIPointer(location, buffer.get_components(), buffer.get_data_type(), ZERO_STRIDE, ZERO_BUFFER_OFFSET);
+            break;
+        case GL_DOUBLE:
+            glVertexAttribLPointer(location, buffer.get_components(), buffer.get_data_type(), ZERO_STRIDE, ZERO_BUFFER_OFFSET);
+            break;
+        default:
+            glVertexAttribPointer(location, buffer.get_components(), buffer.get_data_type(), DONT_NORMALIZE, ZERO_STRIDE, ZERO_BUFFER_OFFSET);
+            break;
+    }
     glVertexAttribDivisor(location, divisor);
 }
 

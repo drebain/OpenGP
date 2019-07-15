@@ -6,9 +6,8 @@
 
 #include "Application.h"
 
-#include <OpenGP/MLogger.h>
 #include <OpenGP/GL/gl_debug.h>
-
+#include <OpenGP/MLogger.h>
 
 //=============================================================================
 namespace OpenGP {
@@ -16,17 +15,17 @@ namespace OpenGP {
 
 namespace {
 
-    inline Application &application_wrapper(GLFWwindow *handle) {
-        return *static_cast<Application*>(glfwGetWindowUserPointer(handle));
-    }
-
-    /// Callbacks
-
-    inline void application_close_callback(GLFWwindow *handle) {
-        application_wrapper(handle).close();
-    }
-
+inline Application &application_wrapper(GLFWwindow *handle) {
+    return *static_cast<Application *>(glfwGetWindowUserPointer(handle));
 }
+
+/// Callbacks
+
+inline void application_close_callback(GLFWwindow *handle) {
+    application_wrapper(handle).close();
+}
+
+} // namespace
 
 Application::WindowContainer::~WindowContainer() {
 
@@ -38,10 +37,11 @@ Application::WindowContainer::~WindowContainer() {
     glfwMakeContextCurrent(old_context);
 }
 
-Application::WindowContainer::WindowContainer(Application &app, std::function<void(Window&)> user_display_callback) {
+Application::WindowContainer::WindowContainer(
+    Application &app, std::function<void(Window &)> user_display_callback) {
 
-    auto display_callback = [this, user_display_callback, &app] (Window &window) {
-
+    auto display_callback = [this, user_display_callback,
+                             &app](Window &window) {
         int new_width, new_height;
         std::tie(new_width, new_height) = window.get_size();
 
@@ -79,7 +79,6 @@ Application::WindowContainer::WindowContainer(Application &app, std::function<vo
         glViewport(0, 0, width, height);
 
         fsquad->draw_texture(color_texture);
-
     };
 
     /// After this the new window context is current
@@ -100,15 +99,15 @@ Application::WindowContainer::WindowContainer(Application &app, std::function<vo
 
     framebuffer.attach_color_texture(color_texture);
     framebuffer.attach_depth_texture(depth_texture);
-
 }
 
 Application::Application(const char *name) {
 
     // note: can be called multiple times without problems
-    // docs: "additional calls to glfwInit() after successful initialization but before
+    // docs: "additional calls to glfwInit() after successful initialization but
+    // before
     //        termination will return GL_TRUE immediately"
-    if( !glfwInit() )
+    if (!glfwInit())
         mFatal() << "Failed to initialize GLFW";
 
     // Hint GLFW that we would like a shader-based OpenGL context
@@ -123,29 +122,29 @@ Application::Application(const char *name) {
 
     // Attempt to open the window: fails if required version unavailable
     // @note Intel GPUs do not support OpenGL 3.0
-    if( !(hidden_window = glfwCreateWindow(800, 600, name, nullptr, nullptr)) )
+    if (!(hidden_window = glfwCreateWindow(800, 600, name, nullptr, nullptr)))
         mFatal() << "Failed to open OpenGL 3 GLFW window.";
 
     glfwWindowHint(GLFW_VISIBLE, GL_TRUE);
 
     glfwMakeContextCurrent(hidden_window);
-    if(glfwGetCurrentContext() != hidden_window)
+    if (glfwGetCurrentContext() != hidden_window)
         mFatal() << "Failed to make GLFW context current.";
 
     // GLEW Initialization (must have created a context)
     glewExperimental = GL_TRUE;
     GLenum err = glewInit();
-    if( err != GLEW_OK )
+    if (err != GLEW_OK)
         mFatal() << "Failed GLEW initialization";
 
-    GLDebug::enable();
+    // GLDebug::enable();
 
     glfwSetWindowUserPointer(hidden_window, this);
     glfwSetWindowCloseCallback(hidden_window, &application_close_callback);
 
     // Wipe Startup Errors (TODO: check who causes them? GLEW?)
-    while (glGetError() != GL_NO_ERROR) {}
-
+    while (glGetError() != GL_NO_ERROR) {
+    }
 }
 
 int Application::run() {
@@ -165,14 +164,16 @@ int Application::run() {
         send_event(event);
 
         for (auto &container : windows) {
-
+            glFinish();
+            double t0 = glfwGetTime();
             container.window->draw();
-
+            glFinish();
+            // std::cout << 1000.0 * (glfwGetTime() - t0) << std::endl;
         }
 
         std::vector<decltype(windows.begin())> to_close;
 
-        for (auto it = windows.begin();it != windows.end();++it)
+        for (auto it = windows.begin(); it != windows.end(); ++it)
             if ((*it).window->should_close())
                 to_close.push_back(it);
 
@@ -181,40 +182,38 @@ int Application::run() {
         }
 
         running = !windows.empty();
-
     }
 
     return 0;
-
 }
 
-Window &Application::create_window(std::function<void(Window&)> display_callback) {
+Window &
+Application::create_window(std::function<void(Window &)> display_callback) {
 
     glfwMakeContextCurrent(hidden_window);
 
     windows.emplace_back(*this, display_callback);
 
     return *(windows.back().window);
-
 }
 
 void Application::set_update_callback(std::function<void()> fn) {
     update_callback = fn;
 }
 
-void Application::close() {
-    close_requested = true;
-}
+void Application::close() { close_requested = true; }
 
 template <class PixelType>
-void Application::get_color_images_in_windows(std::list<OpenGP::Image<PixelType>>& col_images) {
-	for (std::list<WindowContainer>::iterator it = windows.begin(); it != windows.end(); ++it) {
-		OpenGP::Image<PixelType> img;
-		it->color_texture.download(img);
-		col_images.push_back(img);
-	}
+void Application::get_color_images_in_windows(
+    std::list<OpenGP::Image<PixelType>> &col_images) {
+    for (std::list<WindowContainer>::iterator it = windows.begin();
+         it != windows.end(); ++it) {
+        OpenGP::Image<PixelType> img;
+        it->color_texture.download(img);
+        col_images.push_back(img);
+    }
 }
 
 //=============================================================================
-} // OpenGP::
+} // namespace OpenGP
 //=============================================================================

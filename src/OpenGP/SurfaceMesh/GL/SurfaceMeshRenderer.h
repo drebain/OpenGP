@@ -5,6 +5,7 @@
 #pragma once
 
 #include <OpenGP/GL/MaterialRenderer.h>
+#include <OpenGP/GL/Texture.h>
 #include <OpenGP/GL/GPUMesh.h>
 #include <OpenGP/SurfaceMesh/SurfaceMesh.h>
 
@@ -20,6 +21,9 @@ private:
 
     Shader shader;
 
+    std::vector<std::vector<Mat4x4>> inverse_bind_poses;
+    R32FTexture bone_texture;
+
     HEADERONLY_INLINE static const char *vshader();
     HEADERONLY_INLINE static const char *gshader();
     HEADERONLY_INLINE static const char *fshader();
@@ -32,6 +36,8 @@ public:
         int count = 1;
     } instancing;
 
+    bool skinning = false;
+
     HEADERONLY_INLINE SurfaceMeshRenderer();
 
     virtual ~SurfaceMeshRenderer() {}
@@ -41,6 +47,14 @@ public:
     HEADERONLY_INLINE void rebuild();
 
     HEADERONLY_INLINE void upload_mesh(const SurfaceMesh &mesh);
+
+    HEADERONLY_INLINE void upload_mesh(const SurfaceMesh &mesh, const std::vector<Mat4x4>& init_transforms);
+
+    HEADERONLY_INLINE void upload_mesh(const SurfaceMesh &mesh, const std::vector<std::vector<Mat4x4>>& init_transforms);
+
+    HEADERONLY_INLINE void upload_transforms(const std::vector<Mat4x4>& transforms);
+
+    HEADERONLY_INLINE void upload_transforms(const std::vector<std::vector<Mat4x4>>& transforms);
 
     HEADERONLY_INLINE GPUMesh &get_gpu_mesh();
 
